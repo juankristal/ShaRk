@@ -87,15 +87,15 @@ def obtainManipCalculation(ho,bin_size):
 
         d=[1,1,1,1]
         for h in range(j,k):
-            if ho[h].column==1:
+            if ho[h].column==0:
                 d[0]=d[0]+1
-            if ho[h].column==2:
+            elif ho[h].column==1:
                 d[1]=d[1]+1
-            if ho[h].column==3:
+            elif ho[h].column==2:
                 d[2]=d[2]+1
-            if ho[h].column==4:
+            elif ho[h].column==3:
                 d[3]=d[3]+1
-
+            else: print(ho[h].column)
         v[i]=max(d[:2])/min(d[:2])+max(d[2:])/min(d[2:])
         x[i]=ho[i].timestamp
 
