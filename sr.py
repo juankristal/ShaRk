@@ -73,28 +73,71 @@ def obtainDensityCalculation2(ho,bin_size):
 
     return (x,v)
 
+def obtainManipCalculation(ho,bin_size):
+    v=np.zeros(len(ho),dtype=int)       
+    x=np.zeros(len(ho),dtype=int)
+    j=0
+    k=0
+    for i in range(len(ho)):
+        while ho[j].timestamp<(ho[i].timestamp-bin_size/2):
+            j+=1
 
-bin_size=3000
+        while ho[k].timestamp<(ho[i].timestamp+bin_size/2) and k<len(ho)-1:
+            k+=1
+
+        d=[1,1,1,1]
+        for h in range(j,k):
+            if ho[h].column==1:
+                d[0]=d[0]+1
+            if ho[h].column==2:
+                d[1]=d[1]+1
+            if ho[h].column==3:
+                d[2]=d[2]+1
+            if ho[h].column==4:
+                d[3]=d[3]+1
+
+        v[i]=max(d[:2])/min(d[:2])+max(d[2:])/min(d[2:])
+        x[i]=ho[i].timestamp
+
+    return (x,v)
+
+
+text="bass drop"
+bin_size=1000
 for m in os.listdir(maps_folder):
     with open(maps_folder+m,"r",encoding="utf8") as f:
         ho = obtainHitObjectArrayFromOsu(f)
         x,y=obtainDensityCalculation2(ho,bin_size)
-        w=1000
+        w=200
         y_roll=np.convolve(y, np.ones(w), 'same') / w
-        # xf=x[x!=-1]
-        # yf=y[y!=-1]
-        # xnew = np.linspace(xf.min(), xf.max(), num=xf.shape[0]*5) 
-        # print(xnew)
-        # spl = BSpline(xf, yf, k=311,extrapolate="periodic")
-        # smooth_y= spl(xnew)
-        # plt.plot(xnew[1:],smooth_y[1:],label=m)
         r = random.random()
         b = random.random()
         g = random.random()
-  
+
+
+
         color = (r, g, b)
         plt.plot(x,y,c=color,alpha=0.3)
         plt.plot(x,y_roll,label=m,c=color,linewidth=3)
+plt.legend()
+plt.show()
+
+for m in os.listdir(maps_folder):
+    with open(maps_folder+m,"r",encoding="utf8") as f:
+        ho = obtainHitObjectArrayFromOsu(f)
+        x,y=obtainManipCalculation(ho,bin_size)
+        w=200
+        y_roll=np.convolve(y, np.ones(w), 'same') / w
+        r = random.random()
+        b = random.random()
+        g = random.random()
+
+
+
+        color = (r, g, b)
+        plt.plot(x,y,c=color,alpha=0.3)
+        plt.plot(x,y_roll,label=m,c=color,linewidth=3)
+
 plt.legend()
 plt.show()
     
