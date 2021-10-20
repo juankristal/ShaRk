@@ -102,17 +102,19 @@ def obtainManipCalculation(ho,bin_size):
     return (x,v)
 
 
-text=["suiren"]
-bin_size=1000
-plt.figure("Density Difficulty")
+text=["azure", "lolit","bass drop"]
+bin_size=500
 
+fig, (dens, manip)=plt.subplots(2,1,sharex=True)
+
+i=3
 for m in os.listdir(maps_folder):
     if text!=[] and not any([t in m.lower() for t in text]): continue
     with open(maps_folder+m,"r",encoding="utf8") as f:
         ho = obtainHitObjectArrayFromOsu(f)
         x,y=obtainDensityCalculation2(ho,bin_size)
         w=200
-        y_roll=np.convolve(y, np.ones(w), 'same') / w
+        y_roll=np.array([np.average(y[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
         r = random.random()
         b = random.random()
         g = random.random()
@@ -120,17 +122,12 @@ for m in os.listdir(maps_folder):
 
 
         color = (r, g, b)
-        plt.plot(x,y,c=color,alpha=0.3)
-        plt.plot(x,y_roll,label=m,c=color,linewidth=3)
-plt.legend()
-plt.figure("(In)Manipulability Difficulty")
-for m in os.listdir(maps_folder):
-    if text!=[] and not any([t in m.lower() for t in text]): continue
-    with open(maps_folder+m,"r",encoding="utf8") as f:
-        ho = obtainHitObjectArrayFromOsu(f)
-        x,y=obtainManipCalculation(ho,bin_size)
-        w=200
-        y_roll=np.convolve(y, np.ones(w), 'same') / w
+        dens.plot(x,y,c=color,alpha=0.3)
+        dens.plot(x,y_roll,label=m,c=color,linewidth=3)
+
+        x,mnp=obtainManipCalculation(ho,bin_size)
+        w=50
+        y_roll=np.array([np.average(mnp[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
         r = random.random()
         b = random.random()
         g = random.random()
@@ -138,10 +135,14 @@ for m in os.listdir(maps_folder):
 
 
         color = (r, g, b)
-        plt.plot(x,y,c=color,alpha=0.3)
-        plt.plot(x,y_roll,label=m,c=color,linewidth=3)
+        manip.plot(x,mnp,c=color,alpha=0.3)
+        manip.text(2,i+1,s=f"{m[:25]+'...'}Total averaged difficulty= {np.average((0.5*mnp)+(y*0.5))}")
+        manip.plot(x,y_roll,label=m,c=color,linewidth=3)
 
-plt.legend()
+        i+=1
+
+dens.legend()
+manip.legend()
 plt.show()
     
 
