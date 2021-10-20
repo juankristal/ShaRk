@@ -96,15 +96,18 @@ def obtainManipCalculation(ho,bin_size):
             elif ho[h].column==3:
                 d[3]=d[3]+1
             else: print(ho[h].column)
-        v[i]=max(d[:2])/min(d[:2])+max(d[2:])/min(d[2:])
+        v[i]=np.var(d[:2])+np.var(d[2:])+np.var([sum(d[:2]),sum(d[2:])])
         x[i]=ho[i].timestamp
 
     return (x,v)
 
 
-text="bass drop"
+text=["suiren"]
 bin_size=1000
+plt.figure("Density Difficulty")
+
 for m in os.listdir(maps_folder):
+    if text!=[] and not any([t in m.lower() for t in text]): continue
     with open(maps_folder+m,"r",encoding="utf8") as f:
         ho = obtainHitObjectArrayFromOsu(f)
         x,y=obtainDensityCalculation2(ho,bin_size)
@@ -120,9 +123,9 @@ for m in os.listdir(maps_folder):
         plt.plot(x,y,c=color,alpha=0.3)
         plt.plot(x,y_roll,label=m,c=color,linewidth=3)
 plt.legend()
-plt.show()
-
+plt.figure("(In)Manipulability Difficulty")
 for m in os.listdir(maps_folder):
+    if text!=[] and not any([t in m.lower() for t in text]): continue
     with open(maps_folder+m,"r",encoding="utf8") as f:
         ho = obtainHitObjectArrayFromOsu(f)
         x,y=obtainManipCalculation(ho,bin_size)
