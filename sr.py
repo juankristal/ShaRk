@@ -27,7 +27,8 @@ def obtainHitObjectArrayFromOsu(file):
         lineinfo=l.split(',')
         column=(int(lineinfo[0])-64)//128
         timestamp=int(lineinfo[2])
-        hitobjects.append(HitObject(column,timestamp))
+        lnend=int(lineinfo[5].split(":")[0])
+        hitobjects.append(HitObject(column,timestamp,lnend))
 
     return hitobjects
 
@@ -163,13 +164,28 @@ def obtainMotionCalculation(ho,bin_size):
 
     return v
 
+def obtainInverseCalculation(ho,bin_size):
+    v=np.zeros(len(ho))       
+    x=np.zeros(len(ho))
+    j=0
+    k=0
+
+    for i in range(len(ho)):
+        if ho[i].isln:
+            print("ln")
+            n=0
+            while ho[i+n].column!=ho[i].column:
+                n+=1
+            v[i]=100/(ho[i+n].timestamp-ho[i].lnend)
+    return v
+
 raw_alpha=0
-text=["ayumu","snows","elekton","starfall","azure","shinbatsu","gendarme"]
+text=["delrio","snows","starfall","shinbatsu"]
 dns_bin_size=1000
 mnp_bin_size=1000
 mtn_bin_size=1000
 w=100
-fig, (dens, manip, motion, total)=plt.subplots(4,1,sharex=True)
+fig, (dens, manip, motion, inverse, total)=plt.subplots(5,1,sharex=True)
 
 i=.9
 for m in os.listdir(maps_folder):
@@ -210,6 +226,16 @@ for m in os.listdir(maps_folder):
         motion.plot(x,mtn_roll,label=m,c=color,linewidth=3)
         motion.set_ylim(0,3.5)
         motion.title.set_text("STR - Strain Component")
+
+        inv=obtainInverseCalculation(ho,mtn_bin_size)
+        inv_roll=np.array([np.average(inv[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
+        inverse.plot(x,inv,c=color,alpha=raw_alpha)
+        inverse.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(inv):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = motion.transAxes)
+        inverse.plot(x,inv_roll,label=m,c=color,linewidth=3)
+        inverse.title.set_text("LN-INV - LN Inverse Component")
+
         ttl_raw=(dns/mnp)*mtn
         ttl=(dns_roll/mnp_roll)*(mtn_roll)
         ttl_roll=np.array([np.average(ttl[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
