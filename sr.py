@@ -92,7 +92,7 @@ def obtainManipCalculation(ho,bin_size):
         l_manip=min(d[:2])/max(d[:2])/(1+np.var(d[:2])) #[0,1]Closer to 1-> more masheable
         r_manip=min(d[2:])/max(d[2:])/(1+np.var(d[2:]))
         h_manip=min(sum(d[:2]),sum(d[2:]))/max(sum(d[:2]),sum(d[2:]))/(1+np.var([sum(d[:2]),sum(d[2:])]))
-        v[i]=np.average([l_manip,r_manip,h_manip]) #[0,1] Clpser to 1 -> easier to mash
+        v[i]=np.average([l_manip,r_manip,h_manip]) #[0,1] Closer to 1 -> easier to mash
         # v[i]=(
         #     np.var(d[:2]) * (min(d[:2])/max(d[:2]))
         #    +np.var(d[2:]) * (min(d[2:])/max(d[2:]))
@@ -100,12 +100,76 @@ def obtainManipCalculation(ho,bin_size):
         # )
     return v
 
+def obtainMotionCalculation(ho,bin_size):
+    v=np.zeros(len(ho))       
+    x=np.zeros(len(ho))
+    j=0
+    k=0
 
-text=["suiren","bass drop","lolit","starfall","nhelv"]
+    supr_threshold=35
+    for i in range(len(ho)):
+        # while ho[j].timestamp<(ho[i].timestamp-bin_size/2):
+        #     j+=1
+
+        # while ho[k].timestamp<(ho[i].timestamp+bin_size/2) and k<len(ho)-1:
+        #     k+=1
+
+        # m=0
+        # before,after=False,False
+        # if ho[i].timestamp!=ho[0].timestamp:
+        #     print(ho[i].timestamp)
+        #     print(ho[0].timestamp)
+        #     n=0
+        #     while ho[i-1-n].timestamp==ho[i].timestamp:
+        #         n+=1
+        #         print(i-1-n)
+        #         print(ho[i-1-n].column,"",ho[i-1-n].timestamp)
+        #     ch=ho[i].column
+        #     c=ho[i-1-n].column
+        #     csum=c+ch
+        #     if c==ch:
+        #         m+=1.5
+        #     elif csum==5 or csum==1:
+        #         m+=1
+        #     else:
+        #         m+=0.5
+        #     before=True
+        w=0
+        if ho[i].timestamp!=ho[len(ho)-1].timestamp:
+            n=0
+            while ho[i+1+n].timestamp==ho[i].timestamp:
+                n+=1
+            distance=ho[i+1+n].timestamp-ho[i].timestamp
+            nn=n
+            while ho[i+1+nn].timestamp==ho[i+1+n].timestamp:
+                ch=ho[i].column
+                c=ho[i+1+nn].column
+                csum=c+ch
+                
+                if c==ch:
+                    w+=2
+                else:
+                    if distance<supr_threshold: distance=abs(distance-2*supr_threshold)
+                    if csum==5 or csum==1:
+                        w+=1.4
+                    else:
+                        w+=0.9
+                nn+=1
+                if (i+1+nn)>=len(ho):break
+            
+            v[i]=w*(100/distance)
+        else: 
+            v[i]=0
+
+    return v
+
+raw_alpha=0
+text=["ayumu","snows","elekton","starfall","azure","shinbatsu","gendarme"]
 dns_bin_size=1000
 mnp_bin_size=1000
+mtn_bin_size=1000
 w=100
-fig, (dens, manip, total)=plt.subplots(3,1,sharex=True)
+fig, (dens, manip, motion, total)=plt.subplots(4,1,sharex=True)
 
 i=.9
 for m in os.listdir(maps_folder):
@@ -122,29 +186,42 @@ for m in os.listdir(maps_folder):
         dns=obtainDensityCalculation2(ho,dns_bin_size)
         dns_roll=np.array([np.average(dns[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
        
-        dens.plot(x,dns,c=color,alpha=0.1)
+        dens.plot(x,dns,c=color,alpha=raw_alpha)
         dens.plot(x,dns_roll,label=m,c=color,linewidth=3)
-        dens.text(0,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(dns_roll)}",horizontalalignment='left',
-     verticalalignment='center',
-     transform = dens.transAxes)
-
+        dens.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(dns_roll):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = dens.transAxes)
+        dens.title.set_text("DNS - Density Component")
         mnp=obtainManipCalculation(ho,mnp_bin_size)
         mnp_roll=np.array([np.average(mnp[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
-        manip.plot(x,mnp,c=color,alpha=0.1)
-        manip.text(0,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(mnp_roll)}",horizontalalignment='left',
-     verticalalignment='center',
-     transform = manip.transAxes)
-
+        manip.plot(x,mnp,c=color,alpha=raw_alpha)
+        manip.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(mnp_roll):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = manip.transAxes)
+        manip.title.set_text("MSH - Mashability Component")
         manip.plot(x,mnp_roll,label=m,c=color,linewidth=3)
-        ttl_raw=dns/mnp
-        ttl=dns_roll/mnp_roll
+        manip.set_ylim(0.35,0.85)
+        mtn=obtainMotionCalculation(ho,mtn_bin_size)
+        mtn_roll=np.array([np.average(mtn[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
+        motion.plot(x,mtn,c=color,alpha=raw_alpha)
+        motion.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(mtn):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = motion.transAxes)
+        motion.plot(x,mtn_roll,label=m,c=color,linewidth=3)
+        motion.set_ylim(0,3.5)
+        motion.title.set_text("STR - Strain Component")
+        ttl_raw=(dns/mnp)*mtn
+        ttl=(dns_roll/mnp_roll)*(mtn_roll)
         ttl_roll=np.array([np.average(ttl[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
-        total.plot(x,ttl_raw,c=color,alpha=0.1)
-        total.text(0,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(ttl)}",horizontalalignment='left',
-     verticalalignment='center',
-     transform = total.transAxes)
+        total.plot(x,ttl_raw,c=color,alpha=raw_alpha)
+        total.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(ttl):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = total.transAxes)
         total.plot(x,ttl_roll,label=m,c=color,linewidth=3)
         total.set_ylim(0,100)
+        total.title.set_text("Total (DNS/MSH)*STR")
+
+
 
         i-=0.1
 
