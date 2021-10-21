@@ -149,7 +149,7 @@ def obtainMotionCalculation(ho,bin_size):
                 if c==ch:
                     w+=2
                 else:
-                    if distance<supr_threshold: distance=abs(distance-2*supr_threshold)
+                    if distance<supr_threshold: distance=2*supr_threshold-distance
                     if csum==5 or csum==1:
                         w+=1.4
                     else:
