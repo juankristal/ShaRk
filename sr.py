@@ -171,16 +171,18 @@ def obtainInverseCalculation(ho,bin_size):
     k=0
 
     for i in range(len(ho)):
-        if ho[i].isln:
-            print("ln")
-            n=0
+        if ho[i].isln and ho[i].timestamp!=ho[-1].timestamp:
+            n=1
             while ho[i+n].column!=ho[i].column:
                 n+=1
-            v[i]=100/(ho[i+n].timestamp-ho[i].lnend)
+                if i+n>=len(ho):break
+            if i+n>=len(ho):break
+            v[i]=1+100/(ho[i+n].timestamp-ho[i].lnend)
+        else: v[i]=1
     return v
 
-raw_alpha=0
-text=["delrio","snows","starfall","shinbatsu"]
+raw_alpha=0.05
+text=["delrio","fortunate","salamandra"]
 dns_bin_size=1000
 mnp_bin_size=1000
 mtn_bin_size=1000
@@ -232,12 +234,12 @@ for m in os.listdir(maps_folder):
         inverse.plot(x,inv,c=color,alpha=raw_alpha)
         inverse.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(inv):0.2f}",horizontalalignment='left',
                     verticalalignment='center',
-                    transform = motion.transAxes)
+                    transform = inverse.transAxes)
         inverse.plot(x,inv_roll,label=m,c=color,linewidth=3)
         inverse.title.set_text("LN-INV - LN Inverse Component")
 
-        ttl_raw=(dns/mnp)*mtn
-        ttl=(dns_roll/mnp_roll)*(mtn_roll)
+        ttl_raw=(dns/mnp)*mtn*np.power(inv,.8)
+        ttl=(dns_roll/mnp_roll)*(mtn_roll)*np.power(inv_roll,.5)
         ttl_roll=np.array([np.average(ttl[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
         total.plot(x,ttl_raw,c=color,alpha=raw_alpha)
         total.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(ttl):0.2f}",horizontalalignment='left',
