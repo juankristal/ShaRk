@@ -18,7 +18,8 @@ from modules.Hold import obtainHoldCalculation
 maps_folder = "./mapas/"
 
 text = ["nanahoshi", "inai inai", "fortunate",
-        "nostalgia", "levitation", "penguin"]
+        "nostalgia", "levitation", "penguin",
+        "lubeder","viscracked", "relive", "zenith"]
 
 dns_bin_size = 1000
 w = 100
@@ -93,11 +94,11 @@ for m in os.listdir(maps_folder):
         generate_subplot(hold, x, hld, hld_roll, color, m,
                          i, "LN-HLD - LN Hold Strain Difficulty")
         generate_subplot(ln_total, x, lnttl_raw, lnttl_roll,
-                         color, m, i, "LN Total - (INV+REL)^LNS")
+                         color, m, i, "LN Total - (INV+REL)^LNS * HLD")
         generate_subplot(rice_total, x, ricettl_raw, ricettl_roll,
                          color, m, i, "RICE Total - (DNS*STR)/MNP")
         generate_subplot(total, x, ttl_raw, ttl_roll, color, m,
-                         i, "Total - ((DNS*STR)/MNP * (INV+REL)^LNS)")
+                         i, "Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD")
 
         i -= 0.1
 

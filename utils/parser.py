@@ -34,7 +34,7 @@ def generate_subplot(subplot, x, raw, roll, color, map, i, title):
 
     subplot.set_ylim(min(subplot.get_ylim()[0], np.min(
         roll)), max(subplot.get_ylim()[1], np.max(roll)))
-    subplot.plot(x, raw, c=color, alpha=0.05)
+    # subplot.plot(x, raw, c=color, alpha=0.05)
     subplot.plot(x, roll, label=map, c=color, linewidth=3)
     subplot.text(0.8, i, s=f"{map[:12]+'...'}: {np.average(roll):0.2f}", horizontalalignment='left',
                  verticalalignment='center',
