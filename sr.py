@@ -165,7 +165,7 @@ def obtainMotionCalculation(ho,bin_size):
     return v
 
 def obtainInverseCalculation(ho,bin_size):
-    v=np.zeros(len(ho))       
+    v=np.ones(len(ho))       
     x=np.zeros(len(ho))
     j=0
     k=0
@@ -177,17 +177,76 @@ def obtainInverseCalculation(ho,bin_size):
                 n+=1
                 if i+n>=len(ho):break
             if i+n>=len(ho):break
-            v[i]=1+100/(ho[i+n].timestamp-ho[i].lnend)
-        else: v[i]=1
+            v[i]+=100/(ho[i+n].timestamp-ho[i].lnend)
+    return v
+
+def obtainLNnessCalculation(ho,bin_size):
+    v=np.ones(len(ho))       
+    x=np.zeros(len(ho))
+    j=0
+    k=0
+    def s(x):
+        return 1 / (1 + math.exp(9-0.1*x))
+    for i in range(len(ho)):
+        if ho[i].isln:
+            v[i]=s(ho[i].lnend-ho[i].timestamp)
+    return v
+
+
+def obtainReleaseCalculation(ho,bin_size):
+    def s(x):
+        return 1 / (1 + math.exp(-x))
+    def f(x):
+        if x>1000:x=1000
+        return s(0.1*(x-60))+s(0.1*(-x+180))-1
+    v=np.zeros(len(ho))       
+    x=np.zeros(len(ho))
+    j=0
+    m
+
+    for i in range(len(ho)):
+        if ho[i].isln:
+            c=ho[i].column
+            n=i
+            while ho[n].timestamp<ho[i].lnend:
+                n+=1
+                if n>=len(ho):break
+            if n>=len(ho):break
+            t=0
+            cols=[0,1,2,3]
+            cols.remove(c)
+            for col in cols:
+                if c+col==1 or c+col==5:
+                    a=2
+                else: a=1
+                j=n
+                while ho[j].column!=col:
+                    j-=1
+                    if j<0: break
+                if j<0: break
+
+                t+=a*f(ho[i].lnend-ho[j].timestamp)
+                
+                if ho[j].lnend>ho[i].lnend:
+                    t+=a*f(ho[j].lnend-ho[i].lnend)
+                else:
+                    j=n+1
+                    if j>=len(ho):break
+                    while ho[j].column!=col:
+                        j+=1
+                        if j>=len(ho):break
+                    if j>=len(ho):break
+                    t+=a*f(ho[j].timestamp-ho[i].lnend)
+            v[i]=t
     return v
 
 raw_alpha=0.05
-text=["delrio","fortunate","salamandra"]
+text=["nanahoshi","inai inai","fortunate","nostalgia","levitation"]
 dns_bin_size=1000
 mnp_bin_size=1000
 mtn_bin_size=1000
 w=100
-fig, (dens, manip, motion, inverse, total)=plt.subplots(5,1,sharex=True)
+fig, ((dens,inverse), (manip,release), (motion,lnness), (rice_total,ln_total), (total,filler))=plt.subplots(nrows=5,ncols=2,sharex=True)
 
 i=.9
 for m in os.listdir(maps_folder):
@@ -238,16 +297,58 @@ for m in os.listdir(maps_folder):
         inverse.plot(x,inv_roll,label=m,c=color,linewidth=3)
         inverse.title.set_text("LN-INV - LN Inverse Component")
 
-        ttl_raw=(dns/mnp)*mtn*np.power(inv,.8)
-        ttl=(dns_roll/mnp_roll)*(mtn_roll)*np.power(inv_roll,.5)
+        rel=obtainReleaseCalculation(ho,mtn_bin_size)
+        rel_roll=np.array([np.average(rel[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
+        release.plot(x,rel,c=color,alpha=raw_alpha)
+        release.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(rel):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = release.transAxes)
+        release.plot(x,rel_roll,label=m,c=color,linewidth=3)
+        release.title.set_text("LN-REL - LN Release Component")
+
+        lns=obtainLNnessCalculation(ho,mtn_bin_size)
+        lns_roll=np.array([np.average(lns[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
+        lnness.plot(x,lns,c=color,alpha=raw_alpha)
+        lnness.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(lns):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = lnness.transAxes)
+        lnness.plot(x,lns_roll,label=m,c=color,linewidth=3)
+        lnness.title.set_text("LN-LNS - LN \"LNness\" Component")
+
+        lnness.set_ylim(.25,1)
+
+        lnttl_raw=np.power((inv*rel),lns)
+        lnttl=np.power((inv_roll*rel_roll),lns_roll)
+        lnttl_roll=np.array([np.average(lnttl[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
+        ln_total.plot(x,lnttl_raw,c=color,alpha=raw_alpha)
+        ln_total.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(lnttl):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = ln_total.transAxes)
+        ln_total.plot(x,lnttl_roll,label=m,c=color,linewidth=3)
+        ln_total.set_ylim(0,8)
+        ln_total.title.set_text("LN Total (INV*REL)^LNS")
+
+        ricettl_raw=(dns/mnp)*mtn
+        ricettl=(dns_roll/mnp_roll)*(mtn_roll)
+        ricettl_roll=np.array([np.average(ricettl[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
+        rice_total.plot(x,ricettl_raw,c=color,alpha=raw_alpha)
+        rice_total.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(ricettl):0.2f}",horizontalalignment='left',
+                    verticalalignment='center',
+                    transform = rice_total.transAxes)
+        rice_total.plot(x,ricettl_roll,label=m,c=color,linewidth=3)
+        rice_total.set_ylim(0,100)
+        rice_total.title.set_text("RICE Total (DNS/MSH)*STR")
+
+        ttl_raw=(dns/mnp)*mtn*np.power((inv*rel),lns)
+        ttl=(dns_roll/mnp_roll)*(mtn_roll)*np.power((inv_roll*rel_roll),lns_roll)
         ttl_roll=np.array([np.average(ttl[max(0,i-w//2):min(len(ho),i+w//2)]) for i in range(len(ho))])
         total.plot(x,ttl_raw,c=color,alpha=raw_alpha)
         total.text(0.8,i,s=f"{m[:12]+'...'}Avg. diff= {np.average(ttl):0.2f}",horizontalalignment='left',
                     verticalalignment='center',
                     transform = total.transAxes)
         total.plot(x,ttl_roll,label=m,c=color,linewidth=3)
-        total.set_ylim(0,100)
-        total.title.set_text("Total (DNS/MSH)*STR")
+        total.set_ylim(0,300)
+        total.title.set_text("Total (DNS/MSH)*STR*(INV*REL)^LNS")
 
 
 
