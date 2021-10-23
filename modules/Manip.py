@@ -1,10 +1,11 @@
 import numpy as np
 
 ###############################################################################
-# Obtains the manipulabilty of each note based on each surroundings. If the 
+# Obtains the manipulabilty of each note based on each surroundings. If the
 # amount of notes between each hand's columns and between hands is balanced,
 # then the patterning is highly manipulable
 ###############################################################################
+
 
 def obtainManipCalculation(ho, bin_size):
     manip = np.zeros(len(ho))
@@ -29,13 +30,13 @@ def obtainManipCalculation(ho, bin_size):
         # For all of the following, 1=Easy to manipulate, 0="Impossible" to manipulate
 
         # How easy is to manipulate the patterning in the left hand
-        l_manip =   (min(col_counts[:2])/max(col_counts[:2])/
-                    (1+np.var(col_counts[:2])))
+        l_manip = (min(col_counts[:2])/max(col_counts[:2]) /
+                   (1+np.var(col_counts[:2])))
         # How easy is to manipulate the patterning in the right hand
-        r_manip =   (min(col_counts[2:])/max(col_counts[2:])/
-                    (1+np.var(col_counts[2:])))
-        h_manip =   (min(sum(col_counts[:2]), sum(col_counts[2:]))/max(sum(col_counts[:2]), sum(col_counts[2:]))/(
-                    1+np.var([sum(col_counts[:2]), sum(col_counts[2:])])))  # How evenly distributed is the patterning between hands
+        r_manip = (min(col_counts[2:])/max(col_counts[2:]) /
+                   (1+np.var(col_counts[2:])))
+        h_manip = (min(sum(col_counts[:2]), sum(col_counts[2:]))/max(sum(col_counts[:2]), sum(col_counts[2:]))/(
+            1+np.var([sum(col_counts[:2]), sum(col_counts[2:])])))  # How evenly distributed is the patterning between hands
 
         manip[i] = np.average([l_manip, r_manip, h_manip])
 
