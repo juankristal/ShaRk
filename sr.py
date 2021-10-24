@@ -18,7 +18,8 @@ from modules.Hold import obtainHoldCalculation
 maps_folder = "./mapas/"
 
 text = ["zero!!", "bleed the fifth", "fake promise", "dark samba master", "eiyuu", "obligatory",
-        "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "viscracked", "purple"]
+        "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "viscracked", "purple","blastix","psystyle"]
+# text = ["shinbatsu","snows","azure","fake promise","ayumu's","starfall","elekton","gendarme","blastix","psystyle","nhelv"]
 
 dns_bin_size = 1000
 w = 100
@@ -30,6 +31,7 @@ i = .9
 for m in os.listdir(maps_folder):
     if text != [] and not any([t.lower() in m.lower() for t in text]):
         continue
+    print(m)
     with open(maps_folder+m, "r", encoding="utf8") as f:
         ho = obtainHitObjectArrayFromOsu(f)
         x = np.array([h.timestamp for h in ho])
@@ -73,7 +75,7 @@ for m in os.listdir(maps_folder):
             [np.average(ricettl[max(0, i-w//2):min(len(ho), i+w//2)]) for i in range(len(ho))])
 
         ttl_raw = (dns/mnp)*str*np.power((1+inv+rel), lns)*np.power(hld, 2)
-        ttl = (dns_roll/mnp_roll)*(str_roll) * \
+        ttl = (dns_roll/(mnp_roll)*(str_roll)) * \
             np.power((1+inv_roll+rel_roll), lns_roll)*np.power(hld_roll, 2)
         ttl_roll = np.array(
             [np.average(ttl[max(0, i-w//2):min(len(ho), i+w//2)]) for i in range(len(ho))])

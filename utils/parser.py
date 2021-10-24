@@ -7,7 +7,7 @@ class HitObject:
     def __init__(self, column, timestamp, lnend=0) -> None:
         self.column = column
         self.timestamp = timestamp
-        self.isln = lnend > 0
+        self.isln = lnend > timestamp
         self.lnend = lnend
 
 

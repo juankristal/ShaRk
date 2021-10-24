@@ -9,8 +9,9 @@ def obtainInverseCalculation(ho):
     v = np.zeros(len(ho))
 
     for i in range(len(ho)):
+        
         if ho[i].isln and ho[i].timestamp != ho[-1].timestamp:
-
+            print(ho[i].timestamp)
             # Find the next note in the same column
             n = i
             while ho[n].column != ho[i].column or i==n:
@@ -20,9 +21,7 @@ def obtainInverseCalculation(ho):
             if n >= len(ho):
                 break
 
-            if f(ho[n].timestamp-ho[i].lnend)>9:
-                print(ho[n].timestamp)
-                print(ho[i].lnend)
+            # print(ho[i].lnend-ho[i].lnend)
             # Difficulty of the inversed press is inversely proportional to the size of the gap
             v[i] += f(ho[n].timestamp-ho[i].lnend)
     return v

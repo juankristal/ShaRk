@@ -24,38 +24,39 @@ def obtainStrainCalculation(ho):
         if ho[i].timestamp != ho[len(ho)-1].timestamp:
             n = 0
             # Find the next note after the current one
-            while ho[i+1+n].timestamp == ho[i].timestamp:
-                n += 1
 
-            distance = ho[i+1+n].timestamp-ho[i].timestamp
+            cols=[0,1,2,3]
+            cols.remove(ho[i].column)
 
-            # Compute, for all notes in that timestamp (it may be a chord), the added difficulty
-            nn = n
-            while ho[i+1+nn].timestamp == ho[i+1+n].timestamp:
-                ch = ho[i].column
-                c = ho[i+1+nn].column
-                csum = c+ch
+            for c in cols:
+                n=i
+                while ho[n].timestamp==ho[i].timestamp or c!=ho[n].column:
+                    n += 1
+                    if n>=len(ho):break
+                if n>=len(ho): break
+
+                distance = ho[n].timestamp-ho[i].timestamp
+
+
+                csum = ho[n].column + ho[i].column
 
                 # Jacks don't get supressed for graces obviously
-                if c == ch:
-                    w += jack_w
+                if c == ho[i].column:
+                    w += jack_w*(100/distance)
 
                 # Otherwise, supress based on how gracey it is
                 else:
                     if distance < supr_threshold:
-                        distance = 2*supr_threshold-distance
+                            distance = 2*supr_threshold-distance
 
-                    # Same hand, different colum
+                        # Same hand, different colum
                     if csum == 5 or csum == 1:
-                        w += onehand_w
+                            w += onehand_w*(100/distance)
 
-                    # Different hand
+                        # Different hand
                     else:
-                        w += twohand_w
-                nn += 1
-                if (i+1+nn) >= len(ho):
-                    break
+                            w += twohand_w*(100/distance)
 
-            strain[i] = w*(100/distance)
+            strain[i] = w
 
     return strain
