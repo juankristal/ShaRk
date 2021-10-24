@@ -19,7 +19,7 @@ maps_folder = "./mapas/"
 
 text = ["zero!!", "bleed the fifth", "fake promise", "dark samba master", "eiyuu", "obligatory",
         "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "viscracked", "purple","blastix","psystyle"]
-# text = ["shinbatsu","snows","azure","fake promise","ayumu's","starfall","elekton","gendarme","blastix","psystyle","nhelv"]
+text = ["shinbatsu","snows","azure","fake promise","ayumu's","starfall","elekton","gendarme","blastix","psystyle","nhelv"]
 
 dns_bin_size = 1000
 w = 100
@@ -103,7 +103,7 @@ for m in os.listdir(maps_folder):
 
         i -= 0.07
 
-dens.legend()
+inverse.legend()
 plt.subplots_adjust(
     wspace=.5)
 plt.show()

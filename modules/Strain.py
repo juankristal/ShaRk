@@ -15,7 +15,7 @@ twohand_w = 0.9
 def obtainStrainCalculation(ho):
     strain = np.zeros(len(ho))
 
-    supr_threshold = 35
+    supr_threshold = 60
     for i in range(len(ho)):
 
         w = 0  # Total strain difficulty of the note
@@ -26,7 +26,6 @@ def obtainStrainCalculation(ho):
             # Find the next note after the current one
 
             cols=[0,1,2,3]
-            cols.remove(ho[i].column)
 
             for c in cols:
                 n=i
