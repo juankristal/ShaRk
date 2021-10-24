@@ -17,9 +17,8 @@ from modules.Hold import obtainHoldCalculation
 
 maps_folder = "./mapas/"
 
-text = ["nanahoshi", "inai inai", "fortunate",
-        "nostalgia", "levitation", "penguin",
-        "lubeder","viscracked", "relive", "zenith"]
+text = ["zero!!", "bleed the fifth", "fake promise", "dark samba master", "eiyuu", "obligatory",
+        "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "viscracked", "purple"]
 
 dns_bin_size = 1000
 w = 100
@@ -29,7 +28,7 @@ fig, ((dens, inverse), (manip, release), (strain, lnness), (rice_total,
 
 i = .9
 for m in os.listdir(maps_folder):
-    if text != [] and not any([t in m.lower() for t in text]):
+    if text != [] and not any([t.lower() in m.lower() for t in text]):
         continue
     with open(maps_folder+m, "r", encoding="utf8") as f:
         ho = obtainHitObjectArrayFromOsu(f)
@@ -63,8 +62,8 @@ for m in os.listdir(maps_folder):
         hld_roll = np.array(
             [np.average(hld[max(0, i-w//2):min(len(ho), i+w//2)]) for i in range(len(ho))])
 
-        lnttl_raw = np.power((inv+rel), lns)*np.power(hld, 2)
-        lnttl = np.power((inv_roll+rel_roll), lns_roll)*np.power(hld_roll, 2)
+        lnttl_raw = np.power((1+inv+rel), lns)*np.power(hld, 2)
+        lnttl = np.power((1+inv_roll+rel_roll), lns_roll)*np.power(hld_roll, 2)
         lnttl_roll = np.array(
             [np.average(lnttl[max(0, i-w//2):min(len(ho), i+w//2)]) for i in range(len(ho))])
 
@@ -73,9 +72,9 @@ for m in os.listdir(maps_folder):
         ricettl_roll = np.array(
             [np.average(ricettl[max(0, i-w//2):min(len(ho), i+w//2)]) for i in range(len(ho))])
 
-        ttl_raw = (dns/mnp)*str*np.power((inv+rel), lns)*np.power(hld, 2)
+        ttl_raw = (dns/mnp)*str*np.power((1+inv+rel), lns)*np.power(hld, 2)
         ttl = (dns_roll/mnp_roll)*(str_roll) * \
-            np.power((inv_roll+rel_roll), lns_roll)*np.power(hld_roll, 2)
+            np.power((1+inv_roll+rel_roll), lns_roll)*np.power(hld_roll, 2)
         ttl_roll = np.array(
             [np.average(ttl[max(0, i-w//2):min(len(ho), i+w//2)]) for i in range(len(ho))])
 
@@ -100,7 +99,9 @@ for m in os.listdir(maps_folder):
         generate_subplot(total, x, ttl_raw, ttl_roll, color, m,
                          i, "Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD")
 
-        i -= 0.1
+        i -= 0.07
 
 dens.legend()
+plt.subplots_adjust(
+    wspace=.5)
 plt.show()

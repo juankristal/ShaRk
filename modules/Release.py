@@ -1,6 +1,10 @@
 import numpy as np
 import math
 
+
+def s90(x):
+    return 1 / (1 + math.exp(9-0.1*x))
+
 # Sigmoidal
 
 
@@ -8,7 +12,6 @@ def s(x):
     return 1 / (1 + math.exp(-x))
 
 # Sigmoidal-based function that peaks at around 120 and descends on both sites
-
 
 def f(x):
     if x > 1000:
@@ -43,6 +46,14 @@ def obtainReleaseCalculation(ho):
                 break
 
             r = 0  # Release difficulty counter
+
+            next=n 
+            while ho[next].column != c:
+                next+=1
+                if next >= len(ho):
+                     break
+            if next >= len(ho):
+                break
             cols = [0, 1, 2, 3]
             cols.remove(c)
 
@@ -64,7 +75,7 @@ def obtainReleaseCalculation(ho):
                 # ...and add the difficulty to the counter based on timing difference
                 if ho[j].isln:
                     # Notice the abs to support both cases
-                    r += a*f(abs(ho[i].lnend-ho[j].lnend))
+                    r += a*f(abs(ho[i].lnend-ho[j].lnend))*f(abs(ho[i].timestamp-ho[j].lnend))
                 else:
                     r += a*f(ho[i].lnend-ho[j].timestamp)
 
@@ -80,7 +91,7 @@ def obtainReleaseCalculation(ho):
                     break
 
                 # ... and add it to the counter
-                r += a*f(ho[j].timestamp-ho[i].lnend)
+                r += a*f(ho[j].timestamp-ho[i].lnend)*s90(max(min(ho[next].timestamp-ho[j].timestamp,1000),-1000))
 
             v[i] = r
     return v

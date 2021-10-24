@@ -10,11 +10,13 @@ def s(x):
 # in the other finger of the same hand
 ###############################################################################
 
+
 def obtainHoldCalculation(ho):
 
     v = np.ones(len(ho))
     for i in range(len(ho)):
-        c = (ho[i].column+1) % 2 if ho[i].column in [0,1] else (ho[i].column-1) % 2+2
+        c = (ho[i].column+1) % 2 if ho[i].column in [0,
+                                                     1] else (ho[i].column-1) % 2+2
         j = i
         while ho[j].column != c:
             j -= 1
