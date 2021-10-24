@@ -11,7 +11,6 @@ def obtainInverseCalculation(ho):
     for i in range(len(ho)):
         
         if ho[i].isln and ho[i].timestamp != ho[-1].timestamp:
-            print(ho[i].timestamp)
             # Find the next note in the same column
             n = i
             while ho[n].column != ho[i].column or i==n:

@@ -41,3 +41,12 @@ def generate_subplot(subplot, x, raw, roll, color, map, i, title):
                  transform=subplot.transAxes, size=8)
     subplot.title.set_text(title)
     subplot.autoscale()
+
+def checkMode(file):
+    l = file.readline()
+    while "Mode" not in l[:4] and l:
+        l = file.readline()
+    if l:
+        m=int(l.split(" ")[1])
+    else: m=0
+    return m

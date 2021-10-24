@@ -19,8 +19,9 @@ maps_folder = "./mapas/"
 
 text = ["zero!!", "bleed the fifth", "fake promise", "dark samba master", "eiyuu", "obligatory",
         "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "viscracked", "purple","blastix","psystyle"]
-text = ["shinbatsu","snows","azure","fake promise","ayumu's","starfall","elekton","gendarme","blastix","psystyle","nhelv"]
-
+text = ["shinbatsu","snows","azure","fake promise","ayumu's","starfall","elekton","gendarme","siinamota","endorphin","bass drop"]
+# text = ["kamah","azure","regret","aqua","tidek"]
+# text = ["blue zenith","viscracked","lubeder","inai inai","juankristal","howtoplayln"]
 dns_bin_size = 1000
 w = 100
 
@@ -29,10 +30,10 @@ fig, ((dens, inverse), (manip, release), (strain, lnness), (rice_total,
 
 i = .9
 for m in os.listdir(maps_folder):
-    if text != [] and not any([t.lower() in m.lower() for t in text]):
+
+    if not any([t.lower() in m.lower() for t in text]):
         continue
-    print(m)
-    with open(maps_folder+m, "r", encoding="utf8") as f:
+    with open(maps_folder+m, "r", encoding="utf8",errors='ignore') as f: 
         ho = obtainHitObjectArrayFromOsu(f)
         x = np.array([h.timestamp for h in ho])
 
