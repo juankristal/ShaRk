@@ -10,10 +10,40 @@ class HitObject:
         self.isln = lnend > timestamp
         self.lnend = lnend
 
-
+class Beatmap:
+    def __init__(self,title,artist,creator,version,hitobjects,beatmapid,keys):
+        self.name=f"{artist} - {title} ({creator}) [{version}]"
+        self.hitobjects = hitobjects
+        self.beatmapid = beatmapid
+        self.keys=keys
 def obtainHitObjectArrayFromOsu(file):
     hitobjects = []
     l = file.readline()
+
+    while "Title:" not in l[:10]:
+        l = file.readline()
+    title=l[l.find(":")+1:-1]
+
+    while "Artist:" not in l[:10]:
+        l = file.readline()
+    artist=l[l.find(":")+1:-1]
+
+    while "Creator:" not in l[:10]:
+        l = file.readline()
+    creator=l[l.find(":")+1:-1]
+
+    while "Version:" not in l[:10]:
+        l = file.readline()
+    version=l[l.find(":")+1:-1]
+
+    while "BeatmapID:" not in l[:10]:
+        l = file.readline()
+    beatmapid=l[l.find(":")+1:-1]
+
+    while "CircleSize:" not in l[:15]:
+        l = file.readline()
+    keys=int(l[l.find(":")+1:-1])
+
     while "[HitObjects]" not in l:
         l = file.readline()
 
@@ -21,13 +51,17 @@ def obtainHitObjectArrayFromOsu(file):
         l = file.readline()
         if not l:
             break
+        if l=="\n": continue
         lineinfo = l.split(',')
-        column = round((int(lineinfo[0])-64)/128)
+        column = max(min(round((int(lineinfo[0])-64)/128),3),0)
         timestamp = int(lineinfo[2])
-        lnend = int(lineinfo[5].split(":")[0])
+        try:
+            lnend = int(lineinfo[5].split(":")[0])
+        except ValueError:
+            lnend=0
         hitobjects.append(HitObject(column, timestamp, lnend))
-
-    return hitobjects
+        b=Beatmap(title,artist,creator,version,hitobjects,beatmapid,keys)
+    return b
 
 
 def generate_subplot(subplot, x, raw, roll, color, map, i, title):

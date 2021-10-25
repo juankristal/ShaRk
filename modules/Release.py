@@ -23,6 +23,7 @@ def f(x):
 #   the ln ends and notes surrounding the release (one for each column)
 ###############################################################################
 
+# TO-DO: I suspect the algorithm is not working properly (check )
 
 onehand_w = 2
 twohand_w = 1
@@ -65,7 +66,7 @@ def obtainReleaseCalculation(ho):
 
                 # Find the previous closest note in that column...
                 j = n
-                while ho[j].column != col:
+                while ho[j].column != col or j==n:
                     j -= 1
                     if j < 0:
                         break
@@ -77,7 +78,7 @@ def obtainReleaseCalculation(ho):
                     # Notice the abs to support both cases
                     r += a*f(abs(ho[i].lnend-ho[j].lnend))*f(abs(ho[i].timestamp-ho[j].lnend))
                 else:
-                    r += a*f(ho[i].lnend-ho[j].timestamp)
+                    r += a*f(min(ho[i].lnend-ho[j].timestamp,1000))
 
                 # Find the following closest note in that column...
                 j = n+1

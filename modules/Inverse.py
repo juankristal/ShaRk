@@ -3,13 +3,11 @@ import math
 
 f = lambda x: 10/(math.e**(0.05*x))
 
-# TO-DO: make the scaling non-linear in relation to the gap
-
 def obtainInverseCalculation(ho):
     v = np.zeros(len(ho))
 
     for i in range(len(ho)):
-        
+        # print(ho[i].timestamp)
         if ho[i].isln and ho[i].timestamp != ho[-1].timestamp:
             # Find the next note in the same column
             n = i
@@ -19,8 +17,8 @@ def obtainInverseCalculation(ho):
                     break
             if n >= len(ho):
                 break
-
-            # print(ho[i].lnend-ho[i].lnend)
+            
+            # print(ho[n].lnend-ho[i].lnend)
             # Difficulty of the inversed press is inversely proportional to the size of the gap
-            v[i] += f(ho[n].timestamp-ho[i].lnend)
+            v[i] += f(min(1000,ho[n].timestamp-ho[i].lnend))
     return v

@@ -1,8 +1,8 @@
 import numpy as np
 
 jack_w = 2
-onehand_w = 1.4
-twohand_w = 0.9
+onehand_w = 1.3
+twohand_w = 0.5
 
 ###############################################################################
 # Obtains the strain of hitting each consecutive note pair based on the type of
