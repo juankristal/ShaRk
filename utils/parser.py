@@ -10,13 +10,16 @@ class HitObject:
         self.isln = lnend > timestamp
         self.lnend = lnend
 
+
 class Beatmap:
-    def __init__(self,title,artist,creator,version,hitobjects,beatmapid,keys,dt_hitobjects):
-        self.name=f"{artist} - {title} ({creator}) [{version}]"
+    def __init__(self, title, artist, creator, version, hitobjects, beatmapid, keys, dt_hitobjects):
+        self.name = f"{artist} - {title} ({creator}) [{version}]"
         self.hitobjects = hitobjects
         self.dt_hitobjects = dt_hitobjects
         self.beatmapid = beatmapid
-        self.keys=keys
+        self.keys = keys
+
+
 def obtainHitObjectArrayFromOsu(file):
     hitobjects = []
     dt_hitobjects = []
@@ -24,27 +27,27 @@ def obtainHitObjectArrayFromOsu(file):
 
     while "Title:" not in l[:10]:
         l = file.readline()
-    title=l[l.find(":")+1:-1]
+    title = l[l.find(":")+1:-1]
 
     while "Artist:" not in l[:10]:
         l = file.readline()
-    artist=l[l.find(":")+1:-1]
+    artist = l[l.find(":")+1:-1]
 
     while "Creator:" not in l[:10]:
         l = file.readline()
-    creator=l[l.find(":")+1:-1]
+    creator = l[l.find(":")+1:-1]
 
     while "Version:" not in l[:10]:
         l = file.readline()
-    version=l[l.find(":")+1:-1]
+    version = l[l.find(":")+1:-1]
 
     while "BeatmapID:" not in l[:10]:
         l = file.readline()
-    beatmapid=l[l.find(":")+1:-1]
+    beatmapid = l[l.find(":")+1:-1]
 
     while "CircleSize:" not in l[:15]:
         l = file.readline()
-    keys=int(l[l.find(":")+1:-1])
+    keys = int(l[l.find(":")+1:-1])
 
     while "[HitObjects]" not in l:
         l = file.readline()
@@ -53,17 +56,19 @@ def obtainHitObjectArrayFromOsu(file):
         l = file.readline()
         if not l:
             break
-        if l=="\n": continue
+        if l == "\n":
+            continue
         lineinfo = l.split(',')
-        column = max(min(round((int(lineinfo[0])-64)/128),3),0)
+        column = max(min(round((int(lineinfo[0])-64)/128), 3), 0)
         timestamp = int(lineinfo[2])
         try:
             lnend = int(lineinfo[5].split(":")[0])
         except ValueError:
-            lnend=0
+            lnend = 0
         hitobjects.append(HitObject(column, timestamp, lnend))
-        dt_hitobjects.append(HitObject(column,timestamp//1.5,lnend//1.5))
-        b=Beatmap(title,artist,creator,version,hitobjects,beatmapid,keys,dt_hitobjects)
+        dt_hitobjects.append(HitObject(column, timestamp//1.5, lnend//1.5))
+        b = Beatmap(title, artist, creator, version,
+                    hitobjects, beatmapid, keys, dt_hitobjects)
     return b
 
 
@@ -79,11 +84,26 @@ def generate_subplot(subplot, x, raw, roll, color, map, i, title):
     subplot.title.set_text(title)
     subplot.autoscale()
 
+
 def checkMode(file):
     l = file.readline()
     while "Mode" not in l[:4] and l:
         l = file.readline()
     if l:
-        m=int(l.split(" ")[1])
-    else: m=0
+        m = int(l.split(" ")[1])
+    else:
+        m = 0
     return m
+
+
+w = 50
+
+
+def roll(a):
+    return np.array([np.average(a[max(0, i-w//2):min(len(a), i+w//2)]) for i in range(len(a))])
+
+
+def total_diff(dns, mnp, str, inv, rel, lns, hld):
+    return (
+        (dns/mnp)*str*np.power((1+inv+rel), lns)*hld
+    )

@@ -5,9 +5,9 @@ import numpy as np
 # amount of notes between each hand's columns and between hands is balanced,
 # then the patterning is highly manipulable
 ###############################################################################
+bin_size = 1000
 
-
-def obtainManipCalculation(ho, bin_size):
+def obtainManipCalculation(ho):
     manip = np.zeros(len(ho))
 
     wl = 0  # Current index of the note that first enters in the window

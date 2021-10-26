@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 from numpy.lib.function_base import average
 import random
+import csv
 
 from utils.parser import *
 from modules.Density import obtainDensityCalculation
@@ -13,136 +14,100 @@ from modules.Release import obtainReleaseCalculation
 from modules.Strain import obtainStrainCalculation
 from modules.Hold import obtainHoldCalculation
 
-import csv 
+
 
 plots=False
+wcsv=True
 
 maps_folder = "./mapas/"
 
+#Can write whatever specific search here. Use [] to parse all maps
 text = ["zero!!", "bleed the fifth", "fake promise", "dark samba master", "eiyuu", "obligatory",
-        "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "viscracked", "purple","blastix","psystyle"]
-text = ["shinbatsu","snows","azure","fake promise","ayumu's","starfall","elekton","gendarme","siinamota","endorphin","bass"]
-# text = ["kamah","azure","regret","aqua","tidek"]
-# text = ["blue zenith","viscracked","lubeder","inai inai","juankristal","howtoplayln"]
-text=["zalex","inai inai","move that body (juankristal)","first (juankristal)","pi (jinjin) [4k hard]"]
-text=[]
-dns_bin_size = 1000
-w = 100
+        "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "vis::cracked", "purple palace","blastix riotz (Fresh Chicken) [GRAVITY]"
+        ,"aural annihilation"]
 
 fig, ((dens, inverse), (manip, release), (strain, lnness), (rice_total,
       hold), (total,  ln_total)) = plt.subplots(nrows=5, ncols=2, sharex=True)
 
-i = .9
-
-header=["Beatmap ID","Name","Density","Manipulability","Strain","RICE TOTAL","Inverse","Release","Hold","LNNess","LN TOTAL","GLOBAL","DT GLOBAL"]
 wcsv=True
 if wcsv: 
+    header=["Beatmap ID","Name","Density","Manipulability","Strain","RICE TOTAL","Inverse","Release","Hold","LNNess","LN TOTAL","GLOBAL","DT GLOBAL"]
     csv_file=open("calc.csv","w",encoding='UTF8',newline='')
     writer=csv.writer(csv_file)
     writer.writerow(header)
+
 counter=0
+i = .9
 
 for m in os.listdir(maps_folder):
 
     with open(maps_folder+m, "r", encoding="utf8",errors='ignore') as f: 
         
-        print(m)
+        #Parse .osu file
         beatmap = obtainHitObjectArrayFromOsu(f)
 
-        if text!=[] and not any([t.lower() in beatmap.name.lower() for t in text]):
-            continue
+        #Filter only 4k (and the searched files if applicable)
+        if text!=[] and not any([t.lower() in beatmap.name.lower() for t in text]): continue
         if beatmap.keys!=4: continue
 
         print(counter, " | ", beatmap.name)
-        counter+=1
-        x = np.array([h.timestamp for h in beatmap.hitobjects])
-
-        r = random.random()
-        b = random.random()
-        g = random.random()
-        color = (r, g, b)
-
-        dns = obtainDensityCalculation(beatmap.hitobjects, dns_bin_size)
-        mnp = obtainManipCalculation(beatmap.hitobjects, dns_bin_size)
+        
+        #Obtain module calculations (Nomod)
+        dns = obtainDensityCalculation(beatmap.hitobjects)
+        mnp = obtainManipCalculation(beatmap.hitobjects)
         str = obtainStrainCalculation(beatmap.hitobjects)
         inv = obtainInverseCalculation(beatmap.hitobjects)
         rel = obtainReleaseCalculation(beatmap.hitobjects)
         lns = obtainLNnessCalculation(beatmap.hitobjects)
         hld = obtainHoldCalculation(beatmap.hitobjects)
 
-        dt_dns = obtainDensityCalculation(beatmap.dt_hitobjects, dns_bin_size)
-        dt_mnp = obtainManipCalculation(beatmap.dt_hitobjects, dns_bin_size)
+        #Obtain module calculations (DT)
+        dt_dns = obtainDensityCalculation(beatmap.dt_hitobjects)
+        dt_mnp = obtainManipCalculation(beatmap.dt_hitobjects)
         dt_str = obtainStrainCalculation(beatmap.dt_hitobjects)
         dt_inv = obtainInverseCalculation(beatmap.dt_hitobjects)
         dt_rel = obtainReleaseCalculation(beatmap.dt_hitobjects)
         dt_lns = obtainLNnessCalculation(beatmap.dt_hitobjects)
         dt_hld = obtainHoldCalculation(beatmap.dt_hitobjects)
 
-        dns_roll = np.array(
-            [np.average(dns[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        mnp_roll = np.array(
-            [np.average(mnp[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        inv_roll = np.array(
-            [np.average(inv[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        rel_roll = np.array(
-            [np.average(rel[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        lns_roll = np.array(
-            [np.average(lns[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        str_roll = np.array(
-            [np.average(str[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        hld_roll = np.array(
-            [np.average(hld[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
 
+        #Obtain moving averages
+        [dns_roll,mnp_roll,str_roll,inv_roll,rel_roll,lns_roll,hld_roll] = [roll(a) for a in [dns,mnp,str,inv,rel,lns,hld]]
+        [dt_dns_roll,dt_mnp_roll,dt_str_roll,dt_inv_roll,dt_rel_roll,dt_lns_roll,dt_hld_roll] = [roll(a) for a in [dt_dns,dt_mnp,dt_str,dt_inv,dt_rel,dt_lns,dt_hld]]
 
-        dt_dns_roll = np.array(
-            [np.average(dt_dns[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        dt_mnp_roll = np.array(
-            [np.average(dt_mnp[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        dt_inv_roll = np.array(
-            [np.average(dt_inv[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        dt_rel_roll = np.array(
-            [np.average(dt_rel[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        dt_lns_roll = np.array(
-            [np.average(dt_lns[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        dt_str_roll = np.array(
-            [np.average(dt_str[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-        dt_hld_roll = np.array(
-            [np.average(dt_hld[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
-
+        #Obtain LN difficulty multiplier calculations
         dt_lnttl_raw = np.power((1+dt_inv+dt_rel), dt_lns)*np.power(dt_hld, 2)
         dt_lnttl = np.power((1+dt_inv_roll+dt_rel_roll), dt_lns_roll)*np.power(dt_hld_roll, 2)
-        dt_lnttl_roll = np.array(
-            [np.average(dt_lnttl[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
+        dt_lnttl_roll = roll(dt_lnttl)
 
         lnttl_raw = np.power((1+inv+rel), lns)*np.power(hld, 2)
         lnttl = np.power((1+inv_roll+rel_roll), lns_roll)*np.power(hld_roll, 2)
-        lnttl_roll = np.array(
-            [np.average(lnttl[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
+        lnttl_roll = roll(lnttl)
 
+        #Obtain RICE difficulty multiplier calculations
         dt_ricettl_raw = (dt_dns/dt_mnp)*dt_str
         dt_ricettl = (dt_dns_roll/dt_mnp_roll)*(dt_str_roll)
-        dt_ricettl_roll = np.array(
-            [np.average(dt_ricettl[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
+        dt_ricettl_roll = roll(dt_ricettl)
 
         ricettl_raw = (dns/mnp)*str
         ricettl = (dns_roll/mnp_roll)*(str_roll)
-        ricettl_roll = np.array(
-            [np.average(ricettl[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
+        ricettl_roll = roll(ricettl)
 
-        dt_ttl_raw = (dt_dns/dt_mnp)*dt_str*np.power((1+dt_inv+dt_rel), dt_lns)*np.power(dt_hld, 2)
-        dt_ttl = (dt_dns_roll/(dt_mnp_roll)*(dt_str_roll)) * \
-            np.power((1+dt_inv_roll+dt_rel_roll), dt_lns_roll)*np.power(dt_hld_roll, 2)
-        dt_ttl_roll = np.array(
-            [np.average(dt_ttl[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
 
-        ttl_raw = (dns/mnp)*str*np.power((1+inv+rel), lns)*np.power(hld, 2)
-        ttl = (dns_roll/(mnp_roll)*(str_roll)) * \
-            np.power((1+inv_roll+rel_roll), lns_roll)*np.power(hld_roll, 2)
-        ttl_roll = np.array(
-            [np.average(ttl[max(0, i-w//2):min(len(beatmap.hitobjects), i+w//2)]) for i in range(len(beatmap.hitobjects))])
+        #Obtain GLOBAL difficulty calculations
+        dt_ttl_raw = total_diff(dt_dns,dt_mnp,dt_str,dt_inv,dt_rel,dt_lns,dt_hld)
+        dt_ttl = total_diff(dt_dns_roll,dt_mnp_roll,dt_str_roll,dt_inv_roll,dt_rel_roll,dt_lns_roll,dt_hld_roll)
+        dt_ttl_roll = roll(dt_ttl)
 
-        
+        ttl_raw = total_diff(dns,mnp,str,inv,rel,lns,hld)
+        ttl = total_diff(dns_roll,mnp_roll,str_roll,inv_roll,rel_roll,lns_roll,hld_roll)
+        ttl_roll = roll(ttl)
+
+        #Plots
         if plots:
+            color = (random.random(),random.random(),random.random())
+            x = np.array([h.timestamp for h in beatmap.hitobjects])
+
             generate_subplot(dens, x, dns, dns_roll, color,
                             beatmap.name, i, "DNS - Density Component")
             generate_subplot(manip, x, mnp, mnp_roll, color, beatmap.name,
@@ -166,13 +131,30 @@ for m in os.listdir(maps_folder):
 
             i -= 0.07
 
-        if wcsv: writer.writerow([beatmap.beatmapid,beatmap.name,np.average(dns_roll),np.average(mnp_roll),np.average(str_roll),np.average(ricettl_roll),np.average(inv_roll),np.average(rel_roll),np.average(hld_roll),np.average(lns_roll),np.average(lnttl_roll),np.average(ttl_roll),np.average(dt_ttl_roll)])
+        #Write to CSV
+        if wcsv: 
+            writer.writerow(
+            [beatmap.beatmapid,
+            beatmap.name,
+            np.average(dns_roll),
+            np.average(mnp_roll),
+            np.average(str_roll),
+            np.average(ricettl_roll),
+            np.average(inv_roll),
+            np.average(rel_roll),
+            np.average(hld_roll),
+            np.average(lns_roll),
+            np.average(lnttl_roll),
+            np.average(ttl_roll),
+            np.average(dt_ttl_roll)
+            ]
+            )
 
+            counter+=1
 
 if plots:
     inverse.legend()
-    plt.subplots_adjust(
-        wspace=.5)
+    plt.subplots_adjust(wspace=.5)
     plt.show()
 
 

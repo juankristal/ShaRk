@@ -4,9 +4,9 @@ import numpy as np
 # Obtains the density calculation for each note in the map by counting the
 # amount of notes around the note in a timing window of size bin_size
 ###############################################################################
+bin_size = 1000
 
-
-def obtainDensityCalculation(ho, bin_size):
+def obtainDensityCalculation(ho):
     density = np.zeros(len(ho), dtype=int)
     wl = 0  # Current index of the note that first enters in the window
     wr = 0  # Same but for last
