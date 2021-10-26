@@ -1,9 +1,7 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-import math
 from numpy.lib.function_base import average
-from scipy.interpolate import make_interp_spline, BSpline
 import random
 
 from utils.parser import *
@@ -64,13 +62,13 @@ for m in os.listdir(maps_folder):
         g = random.random()
         color = (r, g, b)
 
-        dns = obtainDensityCalculation(beatmap.dt_hitobjects, dns_bin_size)
-        mnp = obtainManipCalculation(beatmap.dt_hitobjects, dns_bin_size)
-        str = obtainStrainCalculation(beatmap.dt_hitobjects)
-        inv = obtainInverseCalculation(beatmap.dt_hitobjects)
-        rel = obtainReleaseCalculation(beatmap.dt_hitobjects)
-        lns = obtainLNnessCalculation(beatmap.dt_hitobjects)
-        hld = obtainHoldCalculation(beatmap.dt_hitobjects)
+        dns = obtainDensityCalculation(beatmap.hitobjects, dns_bin_size)
+        mnp = obtainManipCalculation(beatmap.hitobjects, dns_bin_size)
+        str = obtainStrainCalculation(beatmap.hitobjects)
+        inv = obtainInverseCalculation(beatmap.hitobjects)
+        rel = obtainReleaseCalculation(beatmap.hitobjects)
+        lns = obtainLNnessCalculation(beatmap.hitobjects)
+        hld = obtainHoldCalculation(beatmap.hitobjects)
 
         dt_dns = obtainDensityCalculation(beatmap.dt_hitobjects, dns_bin_size)
         dt_mnp = obtainManipCalculation(beatmap.dt_hitobjects, dns_bin_size)

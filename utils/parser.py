@@ -11,14 +11,15 @@ class HitObject:
         self.lnend = lnend
 
 class Beatmap:
-    def __init__(self,title,artist,creator,version,hitobjects,beatmapid,keys):
+    def __init__(self,title,artist,creator,version,hitobjects,beatmapid,keys,dt_hitobjects):
         self.name=f"{artist} - {title} ({creator}) [{version}]"
         self.hitobjects = hitobjects
-        self.dt_hitobjects = [HitObject(b.column,b.timestamp//1.5,b.lnend//1.5) for b in hitobjects]
+        self.dt_hitobjects = dt_hitobjects
         self.beatmapid = beatmapid
         self.keys=keys
 def obtainHitObjectArrayFromOsu(file):
     hitobjects = []
+    dt_hitobjects = []
     l = file.readline()
 
     while "Title:" not in l[:10]:
@@ -61,7 +62,8 @@ def obtainHitObjectArrayFromOsu(file):
         except ValueError:
             lnend=0
         hitobjects.append(HitObject(column, timestamp, lnend))
-        b=Beatmap(title,artist,creator,version,hitobjects,beatmapid,keys)
+        dt_hitobjects.append(HitObject(column,timestamp//1.5,lnend//1.5))
+        b=Beatmap(title,artist,creator,version,hitobjects,beatmapid,keys,dt_hitobjects)
     return b
 
 
