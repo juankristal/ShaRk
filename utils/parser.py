@@ -14,6 +14,7 @@ class Beatmap:
     def __init__(self,title,artist,creator,version,hitobjects,beatmapid,keys):
         self.name=f"{artist} - {title} ({creator}) [{version}]"
         self.hitobjects = hitobjects
+        self.dt_hitobjects = [HitObject(b.column,b.timestamp//1.5,b.lnend//1.5) for b in hitobjects]
         self.beatmapid = beatmapid
         self.keys=keys
 def obtainHitObjectArrayFromOsu(file):
