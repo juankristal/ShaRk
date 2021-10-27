@@ -14,7 +14,7 @@ from modules.Release import obtainReleaseCalculation
 from modules.Strain import obtainStrainCalculation
 from modules.Hold import obtainHoldCalculation
 
-
+from time import time
 
 plots=False
 wcsv=True
@@ -25,6 +25,9 @@ maps_folder = "./mapas/"
 text = ["zero!!", "bleed the fifth", "fake promise", "dark samba master", "eiyuu", "obligatory",
         "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "vis::cracked", "purple palace","blastix riotz (Fresh Chicken) [GRAVITY]"
         ,"aural annihilation"]
+# text=["beta-endorphin","sore wa mahiru","dark sambaland","DARK SAMBA LAND (Mipha-) [miphather 1.15x (167bpm)","blu (lynessa)","applequestria","mammoth"]
+# text=["southern waters"]
+# text=[]
 
 fig, ((dens, inverse), (manip, release), (strain, lnness), (rice_total,
       hold), (total,  ln_total)) = plt.subplots(nrows=5, ncols=2, sharex=True)
@@ -39,6 +42,7 @@ if wcsv:
 counter=0
 i = .9
 
+t=time()
 for m in os.listdir(maps_folder):
 
     with open(maps_folder+m, "r", encoding="utf8",errors='ignore') as f: 
@@ -72,8 +76,22 @@ for m in os.listdir(maps_folder):
 
 
         #Obtain moving averages
-        [dns_roll,mnp_roll,str_roll,inv_roll,rel_roll,lns_roll,hld_roll] = [roll(a) for a in [dns,mnp,str,inv,rel,lns,hld]]
-        [dt_dns_roll,dt_mnp_roll,dt_str_roll,dt_inv_roll,dt_rel_roll,dt_lns_roll,dt_hld_roll] = [roll(a) for a in [dt_dns,dt_mnp,dt_str,dt_inv,dt_rel,dt_lns,dt_hld]]
+        dns_roll=roll(dns)
+        mnp_roll=roll(mnp)
+        str_roll=roll(str)
+        inv_roll=roll(inv)
+        rel_roll=roll(rel)
+        lns_roll=roll(lns)
+        hld_roll=roll(hld)
+        
+        #Obtain moving averages (DT)
+        dt_dns_roll=roll(dt_dns)
+        dt_mnp_roll=roll(dt_mnp)
+        dt_str_roll=roll(dt_str)
+        dt_inv_roll=roll(dt_inv)
+        dt_rel_roll=roll(dt_rel)
+        dt_lns_roll=roll(dt_lns)
+        dt_hld_roll=roll(dt_hld)
 
         #Obtain LN difficulty multiplier calculations
         dt_lnttl_raw = np.power((1+dt_inv+dt_rel), dt_lns)*np.power(dt_hld, 2)
@@ -158,3 +176,4 @@ if plots:
     plt.show()
 
 
+print(time()-t)

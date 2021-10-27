@@ -100,8 +100,9 @@ w = 50
 
 
 def roll(a):
-    return np.array([np.average(a[max(0, i-w//2):min(len(a), i+w//2)]) for i in range(len(a))])
-
+    # return np.array([np.average(a[max(0, i-w//2):min(len(a), i+w//2)]) for i in range(len(a))])
+    a_padded = np.pad(a, (w//2, w-1-w//2), mode='edge')
+    return np.convolve(a_padded, np.ones((w,))/w, mode='valid') 
 
 def total_diff(dns, mnp, str, inv, rel, lns, hld):
     return (

@@ -1,8 +1,12 @@
 import numpy as np
+import math
 
-jack_w = 2
-onehand_w = 1.3
-twohand_w = 0.5
+jack_w = 2.5
+onehand_w = 1.4
+twohand_w = 0.7
+
+def s(x):
+    return 1 / (1 + math.exp(60-0.1*x))
 
 ###############################################################################
 # Obtains the strain of hitting each consecutive note pair based on the type of
@@ -32,10 +36,9 @@ def obtainStrainCalculation(ho):
                 while ho[n].timestamp==ho[i].timestamp or c!=ho[n].column:
                     n += 1
                     if n>=len(ho):break
-                if n>=len(ho): break
+                if n>=len(ho): continue
 
                 distance = ho[n].timestamp-ho[i].timestamp
-
 
                 csum = ho[n].column + ho[i].column
 
@@ -45,16 +48,25 @@ def obtainStrainCalculation(ho):
 
                 # Otherwise, supress based on how gracey it is
                 else:
-                    if distance < supr_threshold:
-                            distance = 2*supr_threshold-distance
+                    nn=n
+                    while ho[n].timestamp==ho[nn].timestamp or c!=ho[nn].column:
+                        nn -= 1
+                        if nn<0: break
+                    if nn<0: 
+                            # Same hand, different colum
+                        if csum == 5 or csum == 1:
+                                w += onehand_w*(100/distance)*s(ho[n].timestamp-ho[i].timestamp)
 
-                        # Same hand, different colum
-                    if csum == 5 or csum == 1:
-                            w += onehand_w*(100/distance)
+                            # Different hand
+                        else:
+                                w += twohand_w*(100/distance)*s(ho[n].timestamp-ho[i].timestamp)
+                    else: 
+                        if csum == 5 or csum == 1:
+                                w += onehand_w*(100/distance)*s(ho[i].timestamp-ho[nn].timestamp)*s(ho[n].timestamp-ho[i].timestamp)
 
-                        # Different hand
-                    else:
-                            w += twohand_w*(100/distance)
+                                # Different hand
+                        else:
+                                w += twohand_w*(100/distance)*s(ho[i].timestamp-ho[nn].timestamp)*s(ho[n].timestamp-ho[i].timestamp)
 
             strain[i] = w
 
