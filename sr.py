@@ -4,171 +4,119 @@ import matplotlib.pyplot as plt
 from numpy.lib.function_base import average
 import random
 import csv
+from utils.osu_api import extractBeatmapIds, getOsuFile
 
 from utils.parser import *
-from modules.Density import obtainDensityCalculation
-from modules.Manip import obtainManipCalculation
-from modules.LNness import obtainLNnessCalculation
-from modules.Inverse import obtainInverseCalculation
-from modules.Release import obtainReleaseCalculation
-from modules.Strain import obtainStrainCalculation
-from modules.Hold import obtainHoldCalculation
 
 from time import time
 
-plots=False
-wcsv=True
 
-maps_folder = "./mapas/"
+plots=False #Whether to plot stuff 
+wcsv=True   #Whether to write results into csv
 
-#Can write whatever specific search here. Use [] to parse all maps
-text = ["zero!!", "bleed the fifth", "fake promise", "dark samba master", "eiyuu", "obligatory",
-        "wanderflux", "b l a c k - r a y", "dusanco", "fortunate", "algebra", "lubeder", "vis::cracked", "purple palace","blastix riotz (Fresh Chicken) [GRAVITY]"
-        ,"aural annihilation"]
-# text=["beta-endorphin","sore wa mahiru","dark sambaland","DARK SAMBA LAND (Mipha-) [miphather 1.15x (167bpm)","blu (lynessa)","applequestria","mammoth"]
-# text=["southern waters"]
-# text=[]
 
 fig, ((dens, inverse), (manip, release), (strain, lnness), (rice_total,
       hold), (total,  ln_total)) = plt.subplots(nrows=5, ncols=2, sharex=True)
 
-wcsv=True
-if wcsv: 
-    header=["Beatmap ID","Name","Density","Manipulability","Strain","RICE TOTAL","Inverse","Release","Hold","LNNess","LN TOTAL","GLOBAL","DT GLOBAL"]
-    csv_file=open("calc.csv","w",encoding='UTF8',newline='')
-    writer=csv.writer(csv_file)
-    writer.writerow(header)
+#CSV header row
+header=["Beatmap ID","Collection Name","Chart Name","Density","Manipulability","Strain","RICE TOTAL","Inverse","Release","Hold","LNNess","LN TOTAL","GLOBAL","DT GLOBAL"]
 
-counter=0
+
+counter=1
 i = .9
 
 t=time()
-for m in os.listdir(maps_folder):
 
-    with open(maps_folder+m, "r", encoding="utf8",errors='ignore') as f: 
+maps_folder = "./collections/"
+
+os.makedirs("csvs",exist_ok=True)
+os.makedirs("cached_maps",exist_ok=True)
+
+if wcsv: 
+    
+
+    csv_file=open("./CSVS/ALL.csv","w",encoding='UTF8',newline='')
+    global_writer=csv.writer(csv_file)
+    global_writer.writerow(header)
+
+#Identify all collections in collections folder
+for coll in os.listdir(maps_folder):
+    
+    coll_name=coll.split(".")[0]
+    with open(maps_folder+coll, "r", encoding="utf8",errors='ignore') as f: 
         
-        #Parse .osu file
-        beatmap = obtainHitObjectArrayFromOsu(f)
+        #Find all beatmap IDs in the file
+        beatmap_list=extractBeatmapIds(f.read())
 
-        #Filter only 4k (and the searched files if applicable)
-        if text!=[] and not any([t.lower() in beatmap.name.lower() for t in text]): continue
-        if beatmap.keys!=4: continue
-
-        print(counter, " | ", beatmap.name)
-        
-        #Obtain module calculations (Nomod)
-        dns = obtainDensityCalculation(beatmap.hitobjects)
-        mnp = obtainManipCalculation(beatmap.hitobjects)
-        str = obtainStrainCalculation(beatmap.hitobjects)
-        inv = obtainInverseCalculation(beatmap.hitobjects)
-        rel = obtainReleaseCalculation(beatmap.hitobjects)
-        lns = obtainLNnessCalculation(beatmap.hitobjects)
-        hld = obtainHoldCalculation(beatmap.hitobjects)
-
-        #Obtain module calculations (DT)
-        dt_dns = obtainDensityCalculation(beatmap.dt_hitobjects)
-        dt_mnp = obtainManipCalculation(beatmap.dt_hitobjects)
-        dt_str = obtainStrainCalculation(beatmap.dt_hitobjects)
-        dt_inv = obtainInverseCalculation(beatmap.dt_hitobjects)
-        dt_rel = obtainReleaseCalculation(beatmap.dt_hitobjects)
-        dt_lns = obtainLNnessCalculation(beatmap.dt_hitobjects)
-        dt_hld = obtainHoldCalculation(beatmap.dt_hitobjects)
-
-
-        #Obtain moving averages
-        dns_roll=roll(dns)
-        mnp_roll=roll(mnp)
-        str_roll=roll(str)
-        inv_roll=roll(inv)
-        rel_roll=roll(rel)
-        lns_roll=roll(lns)
-        hld_roll=roll(hld)
-        
-        #Obtain moving averages (DT)
-        dt_dns_roll=roll(dt_dns)
-        dt_mnp_roll=roll(dt_mnp)
-        dt_str_roll=roll(dt_str)
-        dt_inv_roll=roll(dt_inv)
-        dt_rel_roll=roll(dt_rel)
-        dt_lns_roll=roll(dt_lns)
-        dt_hld_roll=roll(dt_hld)
-
-        #Obtain LN difficulty multiplier calculations
-        dt_lnttl_raw = np.power((1+dt_inv+dt_rel), dt_lns)*np.power(dt_hld, 2)
-        dt_lnttl = np.power((1+dt_inv_roll+dt_rel_roll), dt_lns_roll)*np.power(dt_hld_roll, 2)
-        dt_lnttl_roll = roll(dt_lnttl)
-
-        lnttl_raw = np.power((1+inv+rel), lns)*np.power(hld, 2)
-        lnttl = np.power((1+inv_roll+rel_roll), lns_roll)*np.power(hld_roll, 2)
-        lnttl_roll = roll(lnttl)
-
-        #Obtain RICE difficulty multiplier calculations
-        dt_ricettl_raw = (dt_dns/dt_mnp)*dt_str
-        dt_ricettl = (dt_dns_roll/dt_mnp_roll)*(dt_str_roll)
-        dt_ricettl_roll = roll(dt_ricettl)
-
-        ricettl_raw = (dns/mnp)*str
-        ricettl = (dns_roll/mnp_roll)*(str_roll)
-        ricettl_roll = roll(ricettl)
-
-
-        #Obtain GLOBAL difficulty calculations
-        dt_ttl_raw = total_diff(dt_dns,dt_mnp,dt_str,dt_inv,dt_rel,dt_lns,dt_hld)
-        dt_ttl = total_diff(dt_dns_roll,dt_mnp_roll,dt_str_roll,dt_inv_roll,dt_rel_roll,dt_lns_roll,dt_hld_roll)
-        dt_ttl_roll = roll(dt_ttl)
-
-        ttl_raw = total_diff(dns,mnp,str,inv,rel,lns,hld)
-        ttl = total_diff(dns_roll,mnp_roll,str_roll,inv_roll,rel_roll,lns_roll,hld_roll)
-        ttl_roll = roll(ttl)
-
-        #Plots
-        if plots:
-            color = (random.random(),random.random(),random.random())
-            x = np.array([h.timestamp for h in beatmap.hitobjects])
-
-            generate_subplot(dens, x, dns, dns_roll, color,
-                            beatmap.name, i, "DNS - Density Component")
-            generate_subplot(manip, x, mnp, mnp_roll, color, beatmap.name,
-                            i, "MNP - Manipulability Component")
-            generate_subplot(strain, x, str, str_roll, color,
-                            beatmap.name, i, "STR - Strain Component")
-            generate_subplot(inverse, x, inv, inv_roll, color, beatmap.name,
-                            i, "LN-INV - LN Inverse Component")
-            generate_subplot(release, x, rel, rel_roll, color, beatmap.name,
-                            i, "LN-REL - LN Release Component")
-            generate_subplot(lnness, x, lns, lns_roll, color, beatmap.name,
-                            i, "LN-LNS - LN LNness Component")
-            generate_subplot(hold, x, hld, hld_roll, color, beatmap.name,
-                            i, "LN-HLD - LN Hold Strain Difficulty")
-            generate_subplot(ln_total, x, lnttl_raw, lnttl_roll,
-                            color, beatmap.name, i, "LN Total - (INV+REL)^LNS * HLD")
-            generate_subplot(rice_total, x, ricettl_raw, ricettl_roll,
-                            color, beatmap.name, i, "RICE Total - (DNS*STR)/MNP")
-            generate_subplot(total, x, ttl_raw, ttl_roll, color, beatmap.name,
-                            i, "Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD")
-
-            i -= 0.07
-
-        #Write to CSV
+        #Prepare CSV collection
         if wcsv: 
-            writer.writerow(
-            [beatmap.beatmapid,
-            beatmap.name,
-            np.average(dns_roll),
-            np.average(mnp_roll),
-            np.average(str_roll),
-            np.average(ricettl_roll),
-            np.average(inv_roll),
-            np.average(rel_roll),
-            np.average(hld_roll),
-            np.average(lns_roll),
-            np.average(lnttl_roll),
-            np.average(ttl_roll),
-            np.average(dt_ttl_roll)
-            ]
-            )
+            csv_file=open(f"./csvs/{coll_name}.csv","w",encoding='UTF8',newline='')
+            writer=csv.writer(csv_file)
+            writer.writerow(header)
 
-            counter+=1
+        for b_id in beatmap_list:
+
+            b_file=getOsuFile(b_id)
+            b = obtainHitObjectArrayFromOsu(b_file)
+
+            if b.keys!=4: continue
+            print(counter, " | ", b.name)
+        
+            b_calc=BeatmapCalculations(b)
+
+            #Write to CSV
+            if wcsv: 
+                row=[
+                b.beatmapid,
+                coll_name,
+                b.name,
+                np.average(b_calc.nomod.dns_roll),
+                np.average(b_calc.nomod.mnp_roll),
+                np.average(b_calc.nomod.stn_roll),
+                np.average(b_calc.nomod.rice_ttl_roll),
+                np.average(b_calc.nomod.inv_roll),
+                np.average(b_calc.nomod.rel_roll),
+                np.average(b_calc.nomod.hld_roll),
+                np.average(b_calc.nomod.lns_roll),
+                np.average(b_calc.nomod.ln_ttl_roll),
+                np.average(b_calc.nomod.ttl_roll),
+                np.average(b_calc.dt.ttl_roll)
+                ]
+
+                writer.writerow(row)
+                global_writer.writerow(row)
+
+                counter+=1
+
+            #Plots
+            if plots:
+                color = (random.random(),random.random(),random.random())
+                x = np.array([h.timestamp for h in b.hitobjects])
+
+                generate_subplot(dens, x, b_calc.nomod.dns, b_calc.nomod.dns_roll, color,
+                                b.name, i, "DNS - Density Component")
+                generate_subplot(manip, x, b_calc.nomod.mnp, b_calc.nomod.mnp_roll, color, b.name,
+                                i, "MNP - Manipulability Component")
+                generate_subplot(strain, x, b_calc.nomod.stn, b_calc.nomod.stn_roll, color,
+                                b.name, i, "STR - Strain Component")
+                generate_subplot(inverse, x, b_calc.nomod.inv, b_calc.nomod.inv_roll, color, b.name,
+                                i, "LN-INV - LN Inverse Component")
+                generate_subplot(release, x, b_calc.nomod.rel, b_calc.nomod.rel_roll, color, b.name,
+                                i, "LN-REL - LN Release Component")
+                generate_subplot(lnness, x, b_calc.nomod.lns, b_calc.nomod.lns_roll, color, b.name,
+                                i, "LN-LNS - LN LNness Component")
+                generate_subplot(hold, x, b_calc.nomod.hld, b_calc.nomod.hld_roll, color, b.name,
+                                i, "LN-HLD - LN Hold Strain Difficulty")
+                generate_subplot(ln_total, x, b_calc.nomod.lnttl_raw, b_calc.nomod.ln_ttl_roll,
+                                color, b.name, i, "LN Total - (INV+REL)^LNS * HLD")
+                generate_subplot(rice_total, x, b_calc.nomod.ricettl_raw, b_calc.nomod.rice_ttl_roll,
+                                color, b.name, i, "RICE Total - (DNS*STR)/MNP")
+                generate_subplot(total, x, b_calc.nomod.ttl_raw, b_calc.nomod.ttl_roll, color, b.name,
+                                i, "Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD")
+
+                i -= 0.07
+
+        
 
 if plots:
     inverse.legend()

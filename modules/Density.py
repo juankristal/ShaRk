@@ -22,6 +22,6 @@ def obtainDensityCalculation(ho):
             wr += 1
 
         # The note count is simply the index difference
-        density[i] = wr-wl
+        density[i] = wr-wl+1
 
     return density

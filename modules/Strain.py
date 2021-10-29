@@ -6,7 +6,7 @@ onehand_w = 1.4
 twohand_w = 0.7
 
 def s(x):
-    return 1 / (1 + math.exp(60-0.1*x))
+    return 1 / (1 + math.exp(6-0.1*x))
 
 ###############################################################################
 # Obtains the strain of hitting each consecutive note pair based on the type of
@@ -53,6 +53,7 @@ def obtainStrainCalculation(ho):
                         nn -= 1
                         if nn<0: break
                     if nn<0: 
+
                             # Same hand, different colum
                         if csum == 5 or csum == 1:
                                 w += onehand_w*(100/distance)*s(ho[n].timestamp-ho[i].timestamp)

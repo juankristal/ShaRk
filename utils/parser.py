@@ -1,7 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.core.records import recarray
+import re
 
+from utils.parser import *
+from modules.Density import obtainDensityCalculation
+from modules.Manip import obtainManipCalculation
+from modules.LNness import obtainLNnessCalculation
+from modules.Inverse import obtainInverseCalculation
+from modules.Release import obtainReleaseCalculation
+from modules.Strain import obtainStrainCalculation
+from modules.Hold import obtainHoldCalculation
 
 class HitObject:
     def __init__(self, column, timestamp, lnend=0) -> None:
@@ -19,31 +28,81 @@ class Beatmap:
         self.beatmapid = beatmapid
         self.keys = keys
 
+class BeatmapCalculations:
+    def __init__(self,b):
+        ho=b.hitobjects
+        ho_dt=b.dt_hitobjects
+        self.nomod=ModuleCalculations(ho)
+        self.dt=ModuleCalculations(ho_dt)
+
+
+class ModuleCalculations:
+    def __init__(self,ho):
+
+        #Basic Module calculations
+        self.dns = obtainDensityCalculation(ho)
+        self.mnp = obtainManipCalculation(ho)
+        self.stn = obtainStrainCalculation(ho)
+        self.inv = obtainInverseCalculation(ho)
+        self.rel = obtainReleaseCalculation(ho)
+        self.lns = obtainLNnessCalculation(ho)
+        self.hld = obtainHoldCalculation(ho)
+
+        #Rolling averages
+        self.dns_roll=roll(self.dns)
+        self.mnp_roll=roll(self.mnp)
+        self.stn_roll=roll(self.stn)
+        self.inv_roll=roll(self.inv)
+        self.rel_roll=roll(self.rel)
+        self.lns_roll=roll(self.lns)
+        self.hld_roll=roll(self.hld)
+
+        #Rice Total
+        self.rice_ttl=self.computeRiceTotal(self.dns,self.mnp,self.stn)
+        self.rice_ttl_roll=self.computeRiceTotal(self.dns_roll,self.mnp_roll,self.stn_roll)
+
+        #Ln Total
+        self.ln_ttl=self.computeLNTotal(self.inv,self.rel,self.lns,self.hld)
+        self.ln_ttl_roll=self.computeLNTotal(self.inv_roll,self.rel_roll,self.lns_roll,self.hld_roll)
+
+        #Global
+        self.ttl=self.computeGlobal(self.rice_ttl,self.ln_ttl)
+        self.ttl_roll=self.computeGlobal(self.rice_ttl_roll,self.ln_ttl_roll)
+
+    def computeRiceTotal(self,dns,mnp,stn):
+        return (dns/mnp)*stn
+    
+    def computeLNTotal(self,inv,rel,lns,hld):
+        return np.power(1+inv+rel,lns)*np.power(hld,0.5)
+
+    def computeGlobal(self,rice,ln):
+        return rice * np.power(ln,0.8)
 
 def obtainHitObjectArrayFromOsu(file):
+    file.seek(0)
     hitobjects = []
     dt_hitobjects = []
     l = file.readline()
 
     while "Title:" not in l[:10]:
         l = file.readline()
-    title = l[l.find(":")+1:-1]
+    title = l[l.find(":")+1:].strip()
 
     while "Artist:" not in l[:10]:
         l = file.readline()
-    artist = l[l.find(":")+1:-1]
+    artist = l[l.find(":")+1:-1].strip()
 
     while "Creator:" not in l[:10]:
         l = file.readline()
-    creator = l[l.find(":")+1:-1]
+    creator = l[l.find(":")+1:-1].strip()
 
     while "Version:" not in l[:10]:
         l = file.readline()
-    version = l[l.find(":")+1:-1]
+    version = l[l.find(":")+1:-1].strip()
 
     while "BeatmapID:" not in l[:10]:
         l = file.readline()
-    beatmapid = l[l.find(":")+1:-1]
+    beatmapid = l[l.find(":")+1:-1].strip()
 
     while "CircleSize:" not in l[:15]:
         l = file.readline()
@@ -67,7 +126,8 @@ def obtainHitObjectArrayFromOsu(file):
             lnend = 0
         hitobjects.append(HitObject(column, timestamp, lnend))
         dt_hitobjects.append(HitObject(column, timestamp//1.5, lnend//1.5))
-        b = Beatmap(title, artist, creator, version,
+    print(title, artist, creator, version)
+    b = Beatmap(title, artist, creator, version,
                     hitobjects, beatmapid, keys, dt_hitobjects)
     return b
 
@@ -104,7 +164,4 @@ def roll(a):
     a_padded = np.pad(a, (w//2, w-1-w//2), mode='edge')
     return np.convolve(a_padded, np.ones((w,))/w, mode='valid') 
 
-def total_diff(dns, mnp, str, inv, rel, lns, hld):
-    return (
-        (dns/mnp)*str*np.power((1+inv+rel), lns)*hld
-    )
+    
