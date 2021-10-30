@@ -1,3 +1,4 @@
+from time import time
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.core.records import recarray
@@ -39,14 +40,32 @@ class BeatmapCalculations:
 class ModuleCalculations:
     def __init__(self,ho):
 
+        t=time()
         #Basic Module calculations
         self.dns = obtainDensityCalculation(ho)
-        self.mnp = obtainManipCalculation(ho)
+        # print(f"Density: {time()-t}")
+        t0=time()
         self.stn = obtainStrainCalculation(ho)
+        # print(f"Strain: {time()-t0}")
+        t0=time()
+       
         self.inv = obtainInverseCalculation(ho)
+        # print(f"Inverse: {time()-t0}")
+        t0=time()
         self.rel = obtainReleaseCalculation(ho)
+        # print(f"Release: {time()-t0}")
+        t0=time()
         self.lns = obtainLNnessCalculation(ho)
+        # print(f"LNNess: {time()-t0}")
+        t0=time()
         self.hld = obtainHoldCalculation(ho)
+        # print(f"Hold: {time()-t0}")
+        t0=time()
+        self.mnp = obtainManipCalculation(ho)
+        # print(f"Manip: {time()-t0}")
+        t0=time()
+        # print(f"Basic Modules: {time()-t}")
+        t=time()
 
         #Rolling averages
         self.dns_roll=roll(self.dns)
@@ -56,7 +75,8 @@ class ModuleCalculations:
         self.rel_roll=roll(self.rel)
         self.lns_roll=roll(self.lns)
         self.hld_roll=roll(self.hld)
-
+        # print(f"Rolling avgs: {time()-t}")
+        t=time()
         #Rice Total
         self.rice_ttl=self.computeRiceTotal(self.dns,self.mnp,self.stn)
         self.rice_ttl_roll=self.computeRiceTotal(self.dns_roll,self.mnp_roll,self.stn_roll)
@@ -68,7 +88,8 @@ class ModuleCalculations:
         #Global
         self.ttl=self.computeGlobal(self.rice_ttl,self.ln_ttl)
         self.ttl_roll=self.computeGlobal(self.rice_ttl_roll,self.ln_ttl_roll)
-
+        # print(f"Globals: {time()-t}")
+        t=time()
     def computeRiceTotal(self,dns,mnp,stn):
         return (dns/mnp)*stn
     
@@ -126,7 +147,6 @@ def obtainHitObjectArrayFromOsu(file):
             lnend = 0
         hitobjects.append(HitObject(column, timestamp, lnend))
         dt_hitobjects.append(HitObject(column, timestamp//1.5, lnend//1.5))
-    print(title, artist, creator, version)
     b = Beatmap(title, artist, creator, version,
                     hitobjects, beatmapid, keys, dt_hitobjects)
     return b
