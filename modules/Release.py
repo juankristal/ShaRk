@@ -65,7 +65,7 @@ def release_next(b_next_release,a_next_press):
 
 # TO-DO: I suspect the algorithm is not working properly (check )
 
-onehand_w = 3
+onehand_w = 2.5
 twohand_w = 1.2
 
 def obtainReleaseCalculation(ho):

@@ -1,8 +1,8 @@
 import numpy as np
 import math
 
-jack_w = 2.5
-onehand_w = 1.4
+jack_w = 2.2
+onehand_w = 1.1
 twohand_w = 0.7
 
 def s(x):

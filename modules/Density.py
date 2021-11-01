@@ -6,6 +6,8 @@ import numpy as np
 ###############################################################################
 bin_size = 1000
 
+#TO-DO: Make the window non-rigid by weighting over a bell curve over (-2,2) instead
+
 def obtainDensityCalculation(ho):
     density = np.zeros(len(ho), dtype=int)
     wl = 0  # Current index of the note that first enters in the window
