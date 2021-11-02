@@ -13,7 +13,7 @@ def gaussian(x):
     return math.exp(-(x**2)/(2))
 
 def obtainDensityCalculation(ho):
-    density = np.zeros(len(ho), dtype=int)
+    density = np.zeros(len(ho))
     wl = 0  # Current index of the note that first enters in the window
     wr = 0  # Same but for last
 
@@ -31,7 +31,7 @@ def obtainDensityCalculation(ho):
             distance=((ho[j].timestamp-ho[i].timestamp)/500)*3
             d+=gaussian(distance)
         # The note count is simply the index difference
-        if d<1: print(ho[i].timestamp)
+
         density[i] = d
 
     return density
