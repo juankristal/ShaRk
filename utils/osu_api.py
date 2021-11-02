@@ -19,6 +19,7 @@ def getOsuFile(beatmap_id):
     
 
 def extractBeatmapIds(text):
-	r = re.findall(r'(?:/b/\d+)|(?:#mania/\d+)|(?:[\s;,\n]\d\d\d\d\d+[\s;,\n])|(?:beatmaps/\d+)', text)
-	r = re.findall(r'\d+', " ".join(r))
-	return r
+    r = re.findall(r'(?:/b/\d+)|(?:#mania/\d+)|(?:\d\d\d\d\d+[\s;,\n\r])|(?:beatmaps/\d+)', text)
+    r = re.findall(r'\d+', " ".join(r))
+    print(r)
+    return r
