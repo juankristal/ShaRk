@@ -94,10 +94,10 @@ class ModuleCalculations:
         return (dns/mnp)*stn
     
     def computeLNTotal(self,inv,rel,lns,hld):
-        return np.power(1+inv+rel,lns)*np.power(hld,0.5)
+        return np.power(1+inv+rel,lns)*np.power(hld,1)
 
     def computeGlobal(self,rice,ln):
-        return rice * np.power(ln,0.8)
+        return rice * np.power(ln,1)
 
 def obtainHitObjectArrayFromOsu(file):
     file.seek(0)

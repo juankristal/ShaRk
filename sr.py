@@ -11,7 +11,7 @@ from utils.parser import *
 from time import time
 
 
-plots=False #Whether to plot stuff 
+plots=True #Whether to plot stuff 
 wcsv=True  #Whether to write results into csv
 
 
@@ -39,7 +39,7 @@ if wcsv:
     global_writer=csv.writer(csv_file)
     global_writer.writerow(header)
 
-mode="ranked"
+mode="collections"
 if mode=="collections":
     #Identify all collections in collections folder
     for coll in os.listdir(colls_folder):
