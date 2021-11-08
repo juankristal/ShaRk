@@ -29,6 +29,7 @@ t=time()
 maps_folder="./mapas/"
 colls_folder = "./collections/"
 
+
 os.makedirs("csvs",exist_ok=True)
 os.makedirs("cached_maps",exist_ok=True)
 
@@ -126,12 +127,15 @@ if mode=="collections":
             plt.subplots_adjust(wspace=.5)
             plt.show()
 
-elif mode=="ranked":
+else:
+    if mode=="ranked": 
+        folder=maps_folder
+    else: folder="./tests/"
 
     fig, ((dens, inverse), (manip, release), (strain, lnness), (rice_total,
       hold), (total,  ln_total)) = plt.subplots(nrows=5, ncols=2, sharex=True)
-    for m in os.listdir(maps_folder):
-        with open(maps_folder+m, "r", encoding="utf8",errors='ignore') as b_file: 
+    for m in os.listdir(folder):
+        with open(folder+m, "r", encoding="utf8",errors='ignore') as b_file: 
             b = obtainHitObjectArrayFromOsu(b_file)
             if b.keys!=4: continue
             print(counter, " | ", b.name)

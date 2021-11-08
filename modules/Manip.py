@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 ###############################################################################
 # Obtains the manipulabilty of each note based on each surroundings. If the
@@ -6,6 +7,9 @@ import numpy as np
 # then the patterning is highly manipulable
 ###############################################################################
 bin_size = 1000
+
+def gaussian(x):
+    return math.exp(-(x**2)/(2))
 
 def obtainManipCalculation(ho):
 
@@ -26,7 +30,7 @@ def obtainManipCalculation(ho):
         # Fin the new last note that is inside the window, count notes per column
         
         while ho[wr].timestamp < (t+bin_size/2) and wr < n_ho-1:
-            col_counts[ho[wr].column] += 1
+            col_counts[ho[wr].column] += gaussian(((ho[wr].timestamp-t)/(bin_size/2))*3)
             wr += 1
 
         hand_counts=col_counts[1::2]+col_counts[0::2]
@@ -38,11 +42,11 @@ def obtainManipCalculation(ho):
         # For all of the following, 1=Easy to manipulate, 0="Impossible" to manipulate
         m=0
         # How easy is to manipulate the patterning in the left hand
-        m+=(1+np.amin(l_hand))/(np.amax(l_hand))/(1+var(l_hand[0],l_hand[1]))
+        m+=(np.amin(l_hand))/(np.amax(l_hand))/(1+var(l_hand[0],l_hand[1]))
         # How easy is to manipulate the patterning in the right hand
-        m+=(1+np.amin(r_hand))/(np.amax(r_hand))/(1+var(r_hand[0],r_hand[1]))
+        m+=(np.amin(r_hand))/(np.amax(r_hand))/(1+var(r_hand[0],r_hand[1]))
         # How evenly distributed is the patterning between hands
-        m+=(1+np.amin(hand_counts))/(np.amax(hand_counts))/(1+var(hand_counts[0],hand_counts[1]))
+        m+=(np.amin(hand_counts))/(np.amax(hand_counts))/(1+var(hand_counts[0],hand_counts[1]))
         manip[i] = m/3
 
     return manip
