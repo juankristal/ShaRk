@@ -40,7 +40,7 @@ if wcsv:
     global_writer=csv.writer(csv_file)
     global_writer.writerow(header)
 
-mode="collections"
+mode="tests"
 if mode=="collections":
     #Identify all collections in collections folder
     for coll in os.listdir(colls_folder):

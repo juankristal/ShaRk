@@ -1,8 +1,8 @@
 import numpy as np
 import math
 
-jack_w = 2.7
-onehand_w = 1.2
+jack_w = 3
+onehand_w = 1.0
 twohand_w = 0.8
 
 bind_500 = lambda x: max(min(x,500),-500)
