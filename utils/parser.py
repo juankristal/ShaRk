@@ -94,7 +94,7 @@ class ModuleCalculations:
         return (dns/mnp)*stn
     
     def computeLNTotal(self,inv,rel,lns,hld):
-        return np.power(1+inv+rel,lns)*np.power(hld,1)
+        return np.power(1+inv+2*rel,lns)*np.power(hld,1)
 
     def computeGlobal(self,rice,ln):
         return rice * np.power(ln,1)

@@ -15,7 +15,7 @@ def obtainManipCalculation(ho):
 
     n_ho=len(ho)
     manip = np.zeros(n_ho)
-    col_counts = np.ones(4)
+    col_counts = np.zeros(4)
     wl = 0  # Current index of the note that first enters in the window
     for i in range(n_ho):
 
@@ -24,14 +24,17 @@ def obtainManipCalculation(ho):
         while ho[wl].timestamp < (t-bin_size/2):
             wl += 1
 
-        col_counts[:]=1
+        col_counts[:]=0
 
         wr=wl
         # Fin the new last note that is inside the window, count notes per column
         
-        while ho[wr].timestamp < (t+bin_size/2) and wr < n_ho-1:
+        while ho[wr].timestamp <= (t+bin_size/2) and wr < n_ho:
             col_counts[ho[wr].column] += gaussian(((ho[wr].timestamp-t)/(bin_size/2))*3)
             wr += 1
+            if wr>=n_ho:
+                break
+
 
         hand_counts=col_counts[1::2]+col_counts[0::2]
         l_hand=col_counts[:2]
@@ -39,14 +42,16 @@ def obtainManipCalculation(ho):
 
         def var(a,b):
             return ((a-b)**2)/((a+b)/2)
-        # For all of the following, 1=Easy to manipulate, 0="Impossible" to manipulate
-        m=0
+
+        
         # How easy is to manipulate the patterning in the left hand
-        m+=(np.amin(l_hand))/(np.amax(l_hand))/(1+var(l_hand[0],l_hand[1]))
+        if ho[i].column in [0,1]:
+            m=np.amin(np.amax(l_hand)-2*np.sqrt(l_hand*(np.amax(l_hand)-l_hand)))/np.amax(l_hand)
         # How easy is to manipulate the patterning in the right hand
-        m+=(np.amin(r_hand))/(np.amax(r_hand))/(1+var(r_hand[0],r_hand[1]))
-        # How evenly distributed is the patterning between hands
-        m+=(np.amin(hand_counts))/(np.amax(hand_counts))/(1+var(hand_counts[0],hand_counts[1]))
-        manip[i] = m/3
+        else:
+            m=np.amin(np.amax(r_hand)-2*np.sqrt(r_hand*(np.amax(r_hand)-r_hand)))/np.amax(r_hand)
+        
+        if math.isnan(m): print(col_counts, ho[i].column)
+        manip[i] = 1/(2-m)
 
     return manip
