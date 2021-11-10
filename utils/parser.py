@@ -12,13 +12,17 @@ from modules.LNness import obtainLNnessCalculation
 from modules.inverse import obtainInverseCalculation
 from modules.release import obtainReleaseCalculation
 from modules.strain import obtainStrainCalculation
-from modules.hold import obtainHoldCalculation
+from modules.hold import Hold
 
 BIN_SIZE = 1000
 
 
+def sigmoid(x):
+    return 1 / (1 + math.exp(9-0.1*x))
+
+
 def gaussian(x):
-    return math.exp(-(x ** 2) / (2))
+    return math.exp(-(x ** 2) / 2)
 
 
 class HitObject:
@@ -66,7 +70,7 @@ class ModuleCalculations:
         self.lns = obtainLNnessCalculation(hit_objects)
         # print(f"LNNess: {time()-t0}")
         t0=time()
-        self.hld = obtainHoldCalculation(hit_objects)
+        self.hld = Hold(sigmoid).calculate(hit_objects)
         # print(f"Hold: {time()-t0}")
         t0=time()
         self.mnp = obtainManipCalculation(hit_objects)

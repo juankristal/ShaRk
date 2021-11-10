@@ -1,33 +1,27 @@
-import numpy as np
-import math
+class Hold:
+    """
+    Obtains for each note the additional "strain" created by having an LN pressed
+    in the other finger of the same hand
+    """
+    def __init__(self, smoother_function):
+        self.smoother_function = smoother_function
 
+    def calculate(self, hit_objects):
+        difficulties = []
+        for i, hit_object in enumerate(hit_objects):
+            same_hand_column = 2 * (hit_object.column // 2) + (hit_object.column + 1) % 2
+            j = i
+            while hit_objects[j].column != same_hand_column and j > 0:
+                j -= 1
 
-def s(x):
-    return 1 / (1 + math.exp(9-0.1*x))
-
-###############################################################################
-# Obtains for each note the additional "strain" created by having an LN pressed
-# in the other finger of the same hand
-###############################################################################
-
-
-def obtainHoldCalculation(ho):
-
-    v = np.ones(len(ho))
-    for i in range(len(ho)):
-        c = (ho[i].column+1) % 2 if ho[i].column in [0,1] else (ho[i].column-1) % 2+2
-        j = i
-        while ho[j].column != c:
-            j -= 1
             if j < 0:
-                break
-        if j < 0:
-            continue
+                continue
 
-        if ho[j].lnend > ho[i].timestamp:
-            d1 = ho[j].lnend-ho[i].timestamp
-            d2 = ho[i].timestamp-ho[j].timestamp
+            if hit_objects[j].lnend > hit_object.timestamp:
+                d1 = hit_objects[j].lnend - hit_object.timestamp
+                d2 = hit_object.timestamp - hit_objects[j].timestamp
 
-            v[i] += s(d1)*s(d2)
+                difficulties.append(self.smoother_function(d1) * self.smoother_function(d2))
 
-    return v
+        return difficulties
+
