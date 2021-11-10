@@ -1,17 +1,25 @@
 from time import time
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 from numpy.core.records import recarray
 import re
 
 from utils.parser import *
-from modules.Density import obtainDensityCalculation
-from modules.Manip import obtainManipCalculation
+from modules.density import Density
+from modules.manipulation import obtainManipCalculation
 from modules.LNness import obtainLNnessCalculation
-from modules.Inverse import obtainInverseCalculation
-from modules.Release import obtainReleaseCalculation
-from modules.Strain import obtainStrainCalculation
-from modules.Hold import obtainHoldCalculation
+from modules.inverse import obtainInverseCalculation
+from modules.release import obtainReleaseCalculation
+from modules.strain import obtainStrainCalculation
+from modules.hold import obtainHoldCalculation
+
+BIN_SIZE = 1000
+
+
+def gaussian(x):
+    return math.exp(-(x ** 2) / (2))
+
 
 class HitObject:
     def __init__(self, column, timestamp, lnend=0) -> None:
@@ -30,38 +38,38 @@ class Beatmap:
         self.keys = keys
 
 class BeatmapCalculations:
-    def __init__(self,b):
-        ho=b.hitobjects
-        ho_dt=b.dt_hitobjects
-        self.nomod=ModuleCalculations(ho)
-        self.dt=ModuleCalculations(ho_dt)
+    def __init__(self, beatmap):
+        hit_objects = beatmap.hitobjects
+        hit_objects_dt = beatmap.dt_hitobjects
+        self.nomod = ModuleCalculations(hit_objects)
+        self.dt = ModuleCalculations(hit_objects_dt)
 
 
 class ModuleCalculations:
-    def __init__(self,ho):
+    def __init__(self,hit_objects):
 
         t=time()
         #Basic Module calculations
-        self.dns = obtainDensityCalculation(ho)
+        self.dns = Density(gaussian, BIN_SIZE).calculate_difficulty(hit_objects)
         # print(f"Density: {time()-t}")
         t0=time()
-        self.stn = obtainStrainCalculation(ho)
+        self.stn = obtainStrainCalculation(hit_objects)
         # print(f"Strain: {time()-t0}")
         t0=time()
        
-        self.inv = obtainInverseCalculation(ho)
+        self.inv = obtainInverseCalculation(hit_objects)
         # print(f"Inverse: {time()-t0}")
         t0=time()
-        self.rel = obtainReleaseCalculation(ho)
+        self.rel = obtainReleaseCalculation(hit_objects)
         # print(f"Release: {time()-t0}")
         t0=time()
-        self.lns = obtainLNnessCalculation(ho)
+        self.lns = obtainLNnessCalculation(hit_objects)
         # print(f"LNNess: {time()-t0}")
         t0=time()
-        self.hld = obtainHoldCalculation(ho)
+        self.hld = obtainHoldCalculation(hit_objects)
         # print(f"Hold: {time()-t0}")
         t0=time()
-        self.mnp = obtainManipCalculation(ho)
+        self.mnp = obtainManipCalculation(hit_objects)
         # print(f"Manip: {time()-t0}")
         t0=time()
         # print(f"Basic Modules: {time()-t}")
@@ -90,6 +98,7 @@ class ModuleCalculations:
         self.ttl_roll=self.computeGlobal(self.rice_ttl_roll,self.ln_ttl_roll)
         # print(f"Globals: {time()-t}")
         t=time()
+
     def computeRiceTotal(self,dns,mnp,stn):
         return (dns/mnp)*stn
     
